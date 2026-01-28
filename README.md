@@ -14,17 +14,19 @@ Evaluation Hub Pro is a modern web application designed to streamline the gradin
 
 ### 👑 Admin Power (Head Portal)
 - **Fluid Event Creation**: Define evaluation events with customizable sessions and criteria.
-- **Bulk Student Import**: Upload `.xlsx` spreadsheets to instantly map students to teams.
+- **Bulk Student Import**: Upload `.xlsx` spreadsheets with intelligent "Fill Down" logic for team names.
+- **Robust Data Handling**: Automatic deduplication and upsert logic to prevent errors when re-uploading student data.
 - **Criteria Management**: Set up multi-session grading criteria (e.g., Logic, UI, Presentation) with weighted marks.
-- **Smart Data Export**: Download consolidated student-wise reports with timestamps and session totals in one click.
+- **Smart Data Export**: Download consolidated student-wise reports including **Reviewer Names**, timestamps, attendance, and session totals.
 - **Security Check**: Password-protected access for administrative functions.
 
 ### 🔍 Reviewer Workflow
+- **Persistent Identity**: Set your reviewer name once (e.g., "Luffy" or "Reviewer 1") and have it automatically linked to every evaluation you submit. Persistent via `localStorage`.
 - **Precision Search**: Real-time team lookup by **Team Name** or **Individual Student Name**.
 - **Live Attendance**: Mark attendance for each student within the review flow.
-- **Incremental Marking**: Interactive grading system with real-time total calculation.
-- **Multi-Event Support**: Quick-switch between different active events via a premium dropdown.
-- **Concurrency Control**: Built-in protection to prevent two reviewers from grading the same session simultaneously.
+- **Text-Based Marking**: Clean number inputs with maximum-mark validation instead of imprecise range sliders.
+- **Multi-Event Support**: Quick-switch between different active events via a premium selection step.
+- **Concurrency Control**: Built-in database constraints to ensure data integrity even when multiple reviewers work simultaneously.
 
 ### 💎 Design & UX
 - **Glassmorphism UI**: A sleek, translucent interface with vibrant gradients and modern typography.
@@ -82,6 +84,8 @@ To import students, your Excel file should contain these columns (case-insensiti
 | S101 | John Doe | Team Alpha |
 | S102 | Jane Smith | Team Alpha |
 | S201 | Alice Brown | Team Beta |
+
+*Note: The system intelligently fills down the team name if a student row is missing it.*
 
 ---
 
