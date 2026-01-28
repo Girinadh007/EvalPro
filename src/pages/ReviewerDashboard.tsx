@@ -525,12 +525,31 @@ const ReviewerDashboard = () => {
                                         <span>{marks[criterion.id]} / {criterion.maxMarks}</span>
                                     </div>
                                     <input
-                                        type="range"
+                                        type="number"
                                         min="0"
                                         max={criterion.maxMarks}
                                         value={marks[criterion.id]}
-                                        onChange={(e) => setMarks(prev => ({ ...prev, [criterion.id]: parseInt(e.target.value) }))}
-                                        style={{ width: '100%' }}
+                                        onChange={(e) => {
+                                            const val = parseInt(e.target.value) || 0;
+                                            if (val > criterion.maxMarks) {
+                                                toast.error(`Max marks for ${criterion.label} is ${criterion.maxMarks}`);
+                                                setMarks(prev => ({ ...prev, [criterion.id]: criterion.maxMarks }));
+                                            } else {
+                                                setMarks(prev => ({ ...prev, [criterion.id]: val }));
+                                            }
+                                        }}
+                                        className="glass"
+                                        style={{
+                                            width: '100%',
+                                            padding: '0.75rem',
+                                            fontSize: '1.25rem',
+                                            fontWeight: 'bold',
+                                            textAlign: 'center',
+                                            background: 'rgba(255,255,255,0.05)',
+                                            border: '1px solid var(--border-color)',
+                                            color: 'white',
+                                            borderRadius: '0.5rem'
+                                        }}
                                     />
                                 </div>
                             ))}
