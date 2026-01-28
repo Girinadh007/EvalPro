@@ -20,18 +20,21 @@ const ReviewerDashboard = () => {
     const [selectedEvent, setSelectedEvent] = useState<any>(null);
     const [sessions, setSessions] = useState<any[]>([]);
     const [selectedSession, setSelectedSession] = useState<any>(null);
-    const [step, setStep] = useState<'team' | 'session' | 'attendance' | 'review' | 'results'>('team');
+    const [step, setStep] = useState<'identity' | 'team' | 'session' | 'attendance' | 'review' | 'results'>('identity');
     const [results, setResults] = useState<any[]>([]);
 
     const [attendance, setAttendance] = useState<Record<string, boolean>>({});
     const [marks, setMarks] = useState<Record<string, number>>({});
     const [remarks, setRemarks] = useState('');
-    const [reviewerName, setReviewerName] = useState('');
+    const [reviewerName, setReviewerName] = useState(() => localStorage.getItem('eval_reviewer_name') || '');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [completedSessions, setCompletedSessions] = useState<string[]>([]);
 
     useEffect(() => {
         fetchEvents();
+        if (reviewerName) {
+            setStep('team');
+        }
 
         // Re-fetch when the tab becomes active to catch any admin changes
         const handleVisibilityChange = () => {
@@ -150,8 +153,8 @@ const ReviewerDashboard = () => {
 
     const handleSubmitReview = async () => {
         if (!reviewerName.trim()) {
-            toast.error('Please enter your name');
-            setStep('session');
+            toast.error('Please set your identity first');
+            setStep('identity');
             return;
         }
         setIsSubmitting(true);
@@ -183,6 +186,7 @@ const ReviewerDashboard = () => {
             if (error) throw error;
 
             toast.success('Review submitted successfully!');
+            // Persistent reviewerName is NOT cleared
             setStep('team');
             setSelectedTeam(null);
             setSelectedSession(null);
@@ -251,7 +255,7 @@ const ReviewerDashboard = () => {
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
             <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', borderBottom: '1px solid var(--border-color)' }}>
                 <button
-                    onClick={() => setStep('team')}
+                    onClick={() => setStep(reviewerName ? 'team' : 'identity')}
                     style={{
                         padding: '1rem',
                         background: 'none',
@@ -274,6 +278,17 @@ const ReviewerDashboard = () => {
                 >
                     View All Results
                 </button>
+                {reviewerName && (
+                    <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0 1rem' }}>
+                        <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Reviewing as: <strong>{reviewerName}</strong></span>
+                        <button
+                            onClick={() => { setStep('identity'); }}
+                            style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontSize: '0.75rem', textDecoration: 'underline' }}
+                        >
+                            Change
+                        </button>
+                    </div>
+                )}
             </div>
 
             <AnimatePresence mode="wait">
@@ -309,6 +324,81 @@ const ReviewerDashboard = () => {
                                     </tbody>
                                 </table>
                                 {results.length === 0 && <p style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>No reviews submitted yet.</p>}
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+
+                {step === 'identity' && (
+                    <motion.div
+                        key="identity-setup"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                    >
+                        <div className="glass" style={{ padding: '3rem', textAlign: 'center' }}>
+                            <div style={{
+                                width: '64px',
+                                height: '64px',
+                                borderRadius: '50%',
+                                background: 'rgba(99, 102, 241, 0.1)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                margin: '0 auto 1.5rem'
+                            }}>
+                                <CheckCircle2 size={32} color="var(--primary)" />
+                            </div>
+                            <h2 style={{ marginBottom: '0.5rem' }}>Welcome, Reviewer!</h2>
+                            <p style={{ color: 'var(--text-muted)', marginBottom: '2.5rem' }}>Please identify yourself to begin the evaluation process.</p>
+
+                            <div style={{ textAlign: 'left', maxWidth: '400px', margin: '0 auto' }}>
+                                <label style={{ display: 'block', marginBottom: '0.75rem', fontWeight: 600, fontSize: '0.875rem', color: 'var(--text-muted)' }}>
+                                    Select or Enter Your Name
+                                </label>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1.5rem' }}>
+                                    {['Reviewer 1', 'Reviewer 2', 'Reviewer 3', 'Reviewer 4', 'Reviewer 5'].map(name => (
+                                        <button
+                                            key={name}
+                                            onClick={() => {
+                                                setReviewerName(name);
+                                                localStorage.setItem('eval_reviewer_name', name);
+                                                setStep('team');
+                                            }}
+                                            className="badge"
+                                            style={{
+                                                cursor: 'pointer',
+                                                background: reviewerName === name ? 'var(--primary)' : 'rgba(255,255,255,0.05)',
+                                                color: reviewerName === name ? 'white' : 'var(--text-muted)',
+                                                border: '1px solid var(--border-color)',
+                                                padding: '0.6rem 1rem',
+                                                fontSize: '0.875rem'
+                                            }}
+                                        >
+                                            {name}
+                                        </button>
+                                    ))}
+                                </div>
+                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                    <input
+                                        type="text"
+                                        placeholder="Enter custom name..."
+                                        value={reviewerName}
+                                        onChange={(e) => setReviewerName(e.target.value)}
+                                        className="glass"
+                                        style={{ flex: 1, padding: '0.875rem' }}
+                                    />
+                                    <button
+                                        className="btn btn-primary"
+                                        disabled={!reviewerName.trim()}
+                                        onClick={() => {
+                                            localStorage.setItem('eval_reviewer_name', reviewerName);
+                                            setStep('team');
+                                        }}
+                                    >
+                                        Start <ArrowRight size={18} />
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </motion.div>
@@ -406,46 +496,6 @@ const ReviewerDashboard = () => {
                             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
                                 <button onClick={() => setStep('team')} className="btn btn-outline" style={{ padding: '0.5rem' }}><ArrowLeft size={18} /></button>
                                 <h2 style={{ margin: 0 }}>Select Review Session</h2>
-                            </div>
-
-                            <div style={{ marginBottom: '1.5rem' }}>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-                                    Select or Enter Reviewer Name
-                                </label>
-                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
-                                    {['Reviewer 1', 'Reviewer 2', 'Reviewer 3', 'Reviewer 4', 'Reviewer 5'].map(name => (
-                                        <button
-                                            key={name}
-                                            onClick={() => setReviewerName(name)}
-                                            className="badge"
-                                            style={{
-                                                cursor: 'pointer',
-                                                background: reviewerName === name ? 'var(--primary)' : 'rgba(255,255,255,0.05)',
-                                                color: reviewerName === name ? 'white' : 'var(--text-muted)',
-                                                border: '1px solid var(--border-color)',
-                                                padding: '0.5rem 0.75rem',
-                                                transition: 'all 0.2s'
-                                            }}
-                                        >
-                                            {name}
-                                        </button>
-                                    ))}
-                                </div>
-                                <input
-                                    type="text"
-                                    placeholder="Or enter custom name..."
-                                    value={reviewerName}
-                                    onChange={(e) => setReviewerName(e.target.value)}
-                                    className="glass"
-                                    style={{
-                                        width: '100%',
-                                        padding: '0.75rem 1rem',
-                                        borderRadius: '0.5rem',
-                                        background: 'rgba(255,255,255,0.05)',
-                                        color: 'white',
-                                        border: '1px solid var(--border-color)'
-                                    }}
-                                />
                             </div>
 
                             <div style={{ marginBottom: '2rem' }}>
