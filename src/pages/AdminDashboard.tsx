@@ -217,10 +217,12 @@ const AdminDashboard = () => {
                             // Calculate total marks for this session
                             const totalMarks = Object.values(review.marks).reduce((sum: number, val: any) => sum + Number(val), 0);
                             row[`S${sNum} Marks`] = totalMarks;
+                            row[`S${sNum} Reviewer`] = review.reviewer_id;
                             row[`S${sNum} Attendance`] = review.attendance[student.student_id] ? 'Present' : 'Absent';
                             row[`S${sNum} Timestamp`] = new Date(review.created_at).toLocaleString();
                         } else {
                             row[`S${sNum} Marks`] = 'N/A';
+                            row[`S${sNum} Reviewer`] = 'N/A';
                             row[`S${sNum} Attendance`] = 'N/A';
                             row[`S${sNum} Timestamp`] = 'N/A';
                         }

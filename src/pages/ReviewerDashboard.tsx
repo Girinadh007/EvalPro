@@ -26,6 +26,7 @@ const ReviewerDashboard = () => {
     const [attendance, setAttendance] = useState<Record<string, boolean>>({});
     const [marks, setMarks] = useState<Record<string, number>>({});
     const [remarks, setRemarks] = useState('');
+    const [reviewerName, setReviewerName] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [completedSessions, setCompletedSessions] = useState<string[]>([]);
 
@@ -148,6 +149,11 @@ const ReviewerDashboard = () => {
     };
 
     const handleSubmitReview = async () => {
+        if (!reviewerName.trim()) {
+            toast.error('Please enter your name');
+            setStep('session');
+            return;
+        }
         setIsSubmitting(true);
         try {
             const { data: existing } = await supabase
@@ -171,7 +177,7 @@ const ReviewerDashboard = () => {
                 attendance,
                 marks,
                 remarks,
-                reviewer_id: 'Reviewer-' + Math.random().toString(36).substr(2, 4)
+                reviewer_id: reviewerName
             }]);
 
             if (error) throw error;
@@ -233,6 +239,7 @@ const ReviewerDashboard = () => {
             'Session': r.session_number,
             'Score': r.score_summary,
             'Remarks': r.remarks,
+            'Reviewer': r.reviewer_id,
             'Timestamp': new Date(r.created_at || '').toLocaleString()
         })));
         const wb = XLSX.utils.book_new();
@@ -399,6 +406,27 @@ const ReviewerDashboard = () => {
                             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
                                 <button onClick={() => setStep('team')} className="btn btn-outline" style={{ padding: '0.5rem' }}><ArrowLeft size={18} /></button>
                                 <h2 style={{ margin: 0 }}>Select Review Session</h2>
+                            </div>
+
+                            <div style={{ marginBottom: '1.5rem' }}>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, fontSize: '0.875rem', color: 'var(--text-muted)' }}>
+                                    Your Name (Reviewer)
+                                </label>
+                                <input
+                                    type="text"
+                                    placeholder="Enter your name..."
+                                    value={reviewerName}
+                                    onChange={(e) => setReviewerName(e.target.value)}
+                                    className="glass"
+                                    style={{
+                                        width: '100%',
+                                        padding: '0.75rem 1rem',
+                                        borderRadius: '0.5rem',
+                                        background: 'rgba(255,255,255,0.05)',
+                                        color: 'white',
+                                        border: '1px solid var(--border-color)'
+                                    }}
+                                />
                             </div>
 
                             <div style={{ marginBottom: '2rem' }}>
