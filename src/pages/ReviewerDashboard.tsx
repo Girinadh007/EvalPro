@@ -32,9 +32,6 @@ const ReviewerDashboard = () => {
 
     useEffect(() => {
         fetchEvents();
-        if (reviewerName) {
-            setStep('team');
-        }
 
         // Re-fetch when the tab becomes active to catch any admin changes
         const handleVisibilityChange = () => {
@@ -362,8 +359,6 @@ const ReviewerDashboard = () => {
                                             key={name}
                                             onClick={() => {
                                                 setReviewerName(name);
-                                                localStorage.setItem('eval_reviewer_name', name);
-                                                setStep('team');
                                             }}
                                             className="badge"
                                             style={{
@@ -396,7 +391,7 @@ const ReviewerDashboard = () => {
                                             setStep('team');
                                         }}
                                     >
-                                        Start <ArrowRight size={18} />
+                                        Next <ArrowRight size={18} />
                                     </button>
                                 </div>
                             </div>
