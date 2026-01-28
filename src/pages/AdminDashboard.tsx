@@ -83,6 +83,26 @@ const AdminDashboard = () => {
 
         setIsSaving(true);
         try {
+            // 0. Pre-process Student Data (Fill Down logic for Team Names)
+            let lastTeam = 'Unassigned';
+            const processedData = studentsData.map(s => {
+                // Find potential team key
+                const rawTeam = s.team_id || s.team || s['team name'] || s['Team Name'] || s['TEAM'] || '';
+                const studentName = s.name || s['student name'] || s['Student Name'] || s['Name'] || '';
+                const studentId = (s.student_id || s.id || s['Sl No.'] || s['sl no'] || Math.random().toString()).toString();
+
+                if (rawTeam && rawTeam.toString().trim() !== '') {
+                    lastTeam = rawTeam.toString().trim();
+                }
+
+                return {
+                    ...s,
+                    final_team: lastTeam,
+                    final_name: studentName,
+                    final_id: studentId
+                };
+            }).filter(s => s.final_name); // Ignore rows with no names
+
             // 1. Create Event
             const { data: eventData, error: eventError } = await supabase
                 .from('evaluation_events')
@@ -103,8 +123,8 @@ const AdminDashboard = () => {
             if (sessError) throw sessError;
 
             // 3. Process Teams and Students
-            // Get unique teams
-            const teamNames = Array.from(new Set(studentsData.map(s => s.team_id || s.team || 'Unassigned')));
+            // Get unique teams from processed data
+            const teamNames = Array.from(new Set(processedData.map(s => s.final_team)));
 
             const { data: teamsData, error: teamsError } = await supabase
                 .from('teams')
@@ -120,19 +140,20 @@ const AdminDashboard = () => {
             }, {} as Record<string, string>);
 
             // Insert Students
-            const studentsToInsert = studentsData.map(s => ({
-                team_id: teamMap[s.team_id || s.team || 'Unassigned'],
-                student_id: (s.student_id || s.id || Math.random().toString()).toString(),
-                name: s.name || s['student name'],
+            const studentsToInsert = processedData.map(s => ({
+                team_id: teamMap[s.final_team],
+                student_id: s.final_id,
+                name: s.final_name,
                 details: s
             }));
 
             const { error: studError } = await supabase.from('students').insert(studentsToInsert);
             if (studError) {
-                console.warn('Individual student insertion error (possibly duplicates):', studError.message);
+                console.error('Student insertion error:', studError);
+                toast.error('Some students could not be saved: ' + studError.message);
             }
 
-            toast.success('Evaluation event created successfully!');
+            toast.success(`Event created with ${processedData.length} students across ${teamNames.length} teams!`);
             setEventName('');
             setStudentsData([]);
             fetchEvents();
