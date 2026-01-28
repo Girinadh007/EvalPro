@@ -147,7 +147,10 @@ const AdminDashboard = () => {
                 details: s
             }));
 
-            const { error: studError } = await supabase.from('students').insert(studentsToInsert);
+            const { error: studError } = await supabase
+                .from('students')
+                .upsert(studentsToInsert, { onConflict: 'team_id, student_id' });
+
             if (studError) {
                 console.error('Student insertion error:', studError);
                 toast.error('Some students could not be saved: ' + studError.message);
