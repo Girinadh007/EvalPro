@@ -410,11 +410,30 @@ const ReviewerDashboard = () => {
 
                             <div style={{ marginBottom: '1.5rem' }}>
                                 <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-                                    Your Name (Reviewer)
+                                    Select or Enter Reviewer Name
                                 </label>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
+                                    {['Reviewer 1', 'Reviewer 2', 'Reviewer 3', 'Reviewer 4', 'Reviewer 5'].map(name => (
+                                        <button
+                                            key={name}
+                                            onClick={() => setReviewerName(name)}
+                                            className="badge"
+                                            style={{
+                                                cursor: 'pointer',
+                                                background: reviewerName === name ? 'var(--primary)' : 'rgba(255,255,255,0.05)',
+                                                color: reviewerName === name ? 'white' : 'var(--text-muted)',
+                                                border: '1px solid var(--border-color)',
+                                                padding: '0.5rem 0.75rem',
+                                                transition: 'all 0.2s'
+                                            }}
+                                        >
+                                            {name}
+                                        </button>
+                                    ))}
+                                </div>
                                 <input
                                     type="text"
-                                    placeholder="Enter your name..."
+                                    placeholder="Or enter custom name..."
                                     value={reviewerName}
                                     onChange={(e) => setReviewerName(e.target.value)}
                                     className="glass"
