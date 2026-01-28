@@ -140,16 +140,24 @@ const AdminDashboard = () => {
             }, {} as Record<string, string>);
 
             // Insert Students
-            const studentsToInsert = processedData.map(s => ({
+            const studentsToInsert = processedData.map((s: any) => ({
                 team_id: teamMap[s.final_team],
                 student_id: s.final_id,
                 name: s.final_name,
                 details: s
             }));
 
+            // 4. Deduplicate studentsToInsert to prevent internal collision during bulk upsert
+            const uniqueStudentsMap = new Map();
+            studentsToInsert.forEach(s => {
+                const key = `${s.team_id}_${s.student_id}`;
+                uniqueStudentsMap.set(key, s);
+            });
+            const deduplicatedStudents = Array.from(uniqueStudentsMap.values());
+
             const { error: studError } = await supabase
                 .from('students')
-                .upsert(studentsToInsert, { onConflict: 'team_id, student_id' });
+                .upsert(deduplicatedStudents, { onConflict: 'team_id,student_id' });
 
             if (studError) {
                 console.error('Student insertion error:', studError);
