@@ -543,7 +543,23 @@ const ReviewerDashboard = () => {
                         animate={{ opacity: 1, scale: 1 }}
                     >
                         <div className="glass" style={{ padding: '2.5rem' }}>
-                            <h2 style={{ marginBottom: '0.5rem' }}>Attendance</h2>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                                <h2 style={{ margin: 0 }}>Attendance</h2>
+                                <button
+                                    className="btn btn-outline"
+                                    style={{ fontSize: '0.75rem', padding: '0.4rem 0.8rem' }}
+                                    onClick={() => {
+                                        const allPresent: Record<string, boolean> = {};
+                                        selectedTeam?.students?.forEach((s: any) => {
+                                            allPresent[s.student_id] = true;
+                                        });
+                                        setAttendance(allPresent);
+                                        toast.success('All marked as present');
+                                    }}
+                                >
+                                    Mark All Present
+                                </button>
+                            </div>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
                                 {selectedTeam?.students?.map((student: any) => (
                                     <div key={student.id} className="glass" style={{
@@ -556,13 +572,32 @@ const ReviewerDashboard = () => {
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                                             <div style={{ fontWeight: 600 }}>{student.name}</div>
                                         </div>
-                                        <button
-                                            onClick={() => setAttendance(prev => ({ ...prev, [student.student_id]: !prev[student.student_id] }))}
-                                            className={`btn ${attendance[student.student_id] ? 'btn-primary' : 'btn-outline'}`}
-                                            style={{ background: attendance[student.student_id] ? 'var(--accent)' : 'transparent' }}
-                                        >
-                                            {attendance[student.student_id] ? 'Present' : 'Absent'}
-                                        </button>
+                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                            <button
+                                                onClick={() => setAttendance(prev => ({ ...prev, [student.student_id]: true }))}
+                                                className={`btn ${attendance[student.student_id] ? 'btn-primary' : 'btn-outline'}`}
+                                                style={{
+                                                    padding: '0.5rem 1rem',
+                                                    fontSize: '0.875rem',
+                                                    background: attendance[student.student_id] ? 'var(--accent)' : 'transparent',
+                                                    borderColor: attendance[student.student_id] ? 'var(--accent)' : 'var(--border-color)'
+                                                }}
+                                            >
+                                                Present
+                                            </button>
+                                            <button
+                                                onClick={() => setAttendance(prev => ({ ...prev, [student.student_id]: false }))}
+                                                className={`btn ${!attendance[student.student_id] ? 'btn-primary' : 'btn-outline'}`}
+                                                style={{
+                                                    padding: '0.5rem 1rem',
+                                                    fontSize: '0.875rem',
+                                                    background: !attendance[student.student_id] ? 'var(--error)' : 'transparent',
+                                                    borderColor: !attendance[student.student_id] ? 'var(--error)' : 'var(--border-color)'
+                                                }}
+                                            >
+                                                Absent
+                                            </button>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
