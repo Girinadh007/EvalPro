@@ -4,13 +4,11 @@ import {
     CheckCircle2,
     Clock,
     ArrowRight,
-    ArrowLeft,
-    Download
+    ArrowLeft
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
-import * as XLSX from 'xlsx';
 
 const ReviewerDashboard = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -20,8 +18,7 @@ const ReviewerDashboard = () => {
     const [selectedEvent, setSelectedEvent] = useState<any>(null);
     const [sessions, setSessions] = useState<any[]>([]);
     const [selectedSession, setSelectedSession] = useState<any>(null);
-    const [step, setStep] = useState<'identity' | 'team' | 'session' | 'attendance' | 'review' | 'results'>('identity');
-    const [results, setResults] = useState<any[]>([]);
+    const [step, setStep] = useState<'identity' | 'team' | 'session' | 'attendance' | 'review'>('identity');
 
     const [attendance, setAttendance] = useState<Record<string, boolean>>({});
     const [marks, setMarks] = useState<Record<string, number>>({});
@@ -196,57 +193,6 @@ const ReviewerDashboard = () => {
         }
     };
 
-    const fetchAllResults = async () => {
-        if (!selectedEvent && events.length > 0) {
-            setSelectedEvent(events[0]);
-        }
-
-        const targetEventId = selectedEvent?.id || events[0]?.id;
-        if (!targetEventId) return;
-
-        const { data: sessData } = await supabase
-            .from('review_sessions')
-            .select('id, session_number, criteria')
-            .eq('event_id', targetEventId);
-
-        if (!sessData) return;
-
-        const sessionIds = sessData.map(s => s.id);
-        const { data: reviewsData } = await supabase
-            .from('reviews')
-            .select('*, teams(name)')
-            .in('session_id', sessionIds);
-
-        if (reviewsData) {
-            const formatted = reviewsData.map(r => {
-                const session = sessData.find(s => s.id === r.session_id);
-                const totalMarks = Object.values(r.marks).reduce((a: any, b: any) => Number(a) + Number(b), 0);
-                const maxMarks = session?.criteria.reduce((a: any, b: any) => a + (b.maxMarks || 0), 0);
-                return {
-                    ...r,
-                    team_name: r.teams?.name,
-                    session_number: session?.session_number,
-                    score_summary: `${totalMarks} / ${maxMarks}`
-                };
-            });
-            setResults(formatted);
-        }
-    };
-
-    const downloadResults = () => {
-        if (results.length === 0) return toast.error('No results to download');
-        const ws = XLSX.utils.json_to_sheet(results.map(r => ({
-            'Team': r.team_name,
-            'Session': r.session_number,
-            'Score': r.score_summary,
-            'Remarks': r.remarks,
-            'Reviewer': r.reviewer_id,
-            'Timestamp': new Date(r.created_at || '').toLocaleString()
-        })));
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Combined Results");
-        XLSX.writeFile(wb, "Evaluation_Results.xlsx");
-    };
 
     return (
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
@@ -256,25 +202,15 @@ const ReviewerDashboard = () => {
                     style={{
                         padding: '1rem',
                         background: 'none',
-                        color: (step !== 'results') ? 'var(--primary)' : 'var(--text-muted)',
-                        borderBottom: (step !== 'results') ? '2px solid var(--primary)' : 'none',
-                        fontWeight: 600
+                        color: 'var(--primary)',
+                        borderBottom: '2px solid var(--primary)',
+                        fontWeight: 600,
+                        cursor: 'default'
                     }}
                 >
                     Review Process
                 </button>
-                <button
-                    onClick={() => { setStep('results'); fetchAllResults(); }}
-                    style={{
-                        padding: '1rem',
-                        background: 'none',
-                        color: step === 'results' ? 'var(--primary)' : 'var(--text-muted)',
-                        borderBottom: step === 'results' ? '2px solid var(--primary)' : 'none',
-                        fontWeight: 600
-                    }}
-                >
-                    View All Results
-                </button>
+
                 {reviewerName && (
                     <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0 1rem' }}>
                         <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Reviewing as: <strong>{reviewerName}</strong></span>
@@ -289,43 +225,6 @@ const ReviewerDashboard = () => {
             </div>
 
             <AnimatePresence mode="wait">
-                {step === 'results' && (
-                    <motion.div key="results" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                        <div className="glass" style={{ padding: '2rem' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                                <h2 style={{ margin: 0 }}>Evaluation Results</h2>
-                                <button className="btn btn-primary" onClick={downloadResults}>
-                                    <Download size={18} /> Download Combined Marks
-                                </button>
-                            </div>
-
-                            <div style={{ overflowX: 'auto' }}>
-                                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                                    <thead>
-                                        <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
-                                            <th style={{ padding: '1rem' }}>Team</th>
-                                            <th style={{ padding: '1rem' }}>Session</th>
-                                            <th style={{ padding: '1rem' }}>Score</th>
-                                            <th style={{ padding: '1rem' }}>Reviewer</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {results.map((res) => (
-                                            <tr key={res.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                                                <td style={{ padding: '1rem' }}>{res.team_name}</td>
-                                                <td style={{ padding: '1rem' }}>S{res.session_number}</td>
-                                                <td style={{ padding: '1rem' }}><span className="badge" style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--accent)' }}>{res.score_summary}</span></td>
-                                                <td style={{ padding: '1rem', fontSize: '0.875rem' }}>{res.reviewer_id}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                                {results.length === 0 && <p style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>No reviews submitted yet.</p>}
-                            </div>
-                        </div>
-                    </motion.div>
-                )}
-
                 {step === 'identity' && (
                     <motion.div
                         key="identity-setup"
