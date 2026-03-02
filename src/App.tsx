@@ -5,6 +5,7 @@ import {
   LogOut,
   ShieldCheck,
 } from 'lucide-react';
+import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 import Login from './pages/Login';
 import AdminDashboard from './pages/AdminDashboard';
 import ReviewerDashboard from './pages/ReviewerDashboard';
@@ -31,6 +32,18 @@ function App() {
     localStorage.removeItem('user_role');
   };
 
+  const { scrollY } = useScroll();
+  const [showHeader, setShowHeader] = useState(true);
+
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    const previous = scrollY.getPrevious() ?? 0;
+    if (latest > previous && latest > 150) {
+      setShowHeader(false);
+    } else {
+      setShowHeader(true);
+    }
+  });
+
   const AnimatedBackground = () => (
     <div className="bg-blobs">
       <div className="blob"></div>
@@ -54,18 +67,30 @@ function App() {
       <AnimatedBackground />
       <Toaster position="top-right" />
 
-      {/* Premium Header */}
-      <header className="glass" style={{
-        margin: '1.5rem',
-        padding: '1.25rem 2.5rem',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        position: 'sticky',
-        top: '1.5rem',
-        zIndex: 100,
-        boxShadow: '0 20px 40px -10px rgba(0,0,0,0.5)'
-      }}>
+      {/* Premium Header - Dynamic Visibility */}
+      <motion.header
+        className="glass"
+        initial={{ y: 0, opacity: 1 }}
+        animate={{
+          y: showHeader ? 0 : -100,
+          opacity: showHeader ? 1 : 0
+        }}
+        transition={{ duration: 0.4, ease: "circOut" }}
+        style={{
+          margin: '1.5rem',
+          padding: '1.25rem 2.5rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 100,
+          boxShadow: '0 20px 40px -10px rgba(0,0,0,0.5)',
+          pointerEvents: showHeader ? 'auto' : 'none'
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
           <div style={{
             background: 'linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)',
@@ -111,9 +136,9 @@ function App() {
             <span>Sign Out</span>
           </button>
         </div>
-      </header>
+      </motion.header>
 
-      <main className="container animate-fade">
+      <main className="container animate-fade" style={{ paddingTop: '10rem' }}>
         {userRole === 'head' ? (
           <AdminDashboard />
         ) : (
@@ -122,15 +147,16 @@ function App() {
       </main>
 
       <footer style={{
-        padding: '4rem 2rem',
+        padding: '3rem 2rem',
         textAlign: 'center',
         color: 'var(--text-muted)',
-        fontSize: '0.9rem',
+        fontSize: '0.85rem',
         borderTop: '1px solid rgba(255,255,255,0.05)',
-        marginTop: '4rem'
+        marginTop: '6rem',
+        background: 'rgba(255,255,255,0.01)'
       }}>
-        <div style={{ marginBottom: '1rem', fontWeight: 700 }}>EvalSystem Pro &copy; 2026</div>
-        <div style={{ opacity: 0.5 }}>Advanced Event Management & Team Evaluation Platform</div>
+        <div style={{ marginBottom: '1rem', fontWeight: 800, letterSpacing: '0.05em' }}>EVALPRO &copy; 2026</div>
+        <div style={{ opacity: 0.4 }}>Performance Excellence & Intelligent Evaluation</div>
       </footer>
     </div>
   );
