@@ -44,7 +44,7 @@ const Login = ({ onLogin }: LoginProps) => {
                 }}
             >
                 <div style={{
-                    background: 'linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)',
+                    background: 'linear-gradient(135deg, var(--accent) 0%, var(--secondary) 100%)',
                     width: '72px',
                     height: '72px',
                     borderRadius: '1.5rem',
@@ -52,7 +52,7 @@ const Login = ({ onLogin }: LoginProps) => {
                     alignItems: 'center',
                     justifyContent: 'center',
                     margin: '0 auto 2rem auto',
-                    boxShadow: '0 15px 35px -5px rgba(99, 102, 241, 0.5)'
+                    boxShadow: '0 15px 35px -5px var(--accent-glow)'
                 }}>
                     <ShieldCheck size={36} color="white" />
                 </div>

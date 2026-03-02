@@ -13,7 +13,6 @@ import {
     BarChart,
     MessageSquare,
     RotateCcw,
-    Trophy,
     Users
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -211,41 +210,22 @@ const ReviewerDashboard = () => {
 
             if (error) throw error;
 
-            toast.custom(() => (
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.5, y: 50 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.5 }}
-                    className="glass"
-                    style={{
-                        padding: '2.5rem 4rem',
-                        background: 'linear-gradient(135deg, var(--accent) 0%, var(--secondary) 100%)',
-                        color: 'white',
-                        borderRadius: '2.5rem',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        gap: '1.5rem',
-                        boxShadow: '0 40px 80px -20px var(--accent-glow)',
-                        zIndex: 9999,
-                        border: '2px solid rgba(255,255,255,0.2)'
-                    }}
-                >
-                    <motion.div
-                        animate={{
-                            scale: [1, 1.2, 1],
-                            rotate: [0, 10, -10, 0]
-                        }}
-                        transition={{ duration: 0.8, repeat: Infinity }}
-                    >
-                        <Trophy size={64} fill="rgba(255,255,255,0.2)" />
-                    </motion.div>
-                    <div style={{ textAlign: 'center' }}>
-                        <h3 style={{ margin: 0, fontSize: '2rem', fontWeight: 900, letterSpacing: '-0.03em' }}>Excellent!</h3>
-                        <p style={{ margin: '0.5rem 0 0 0', opacity: 0.9, fontSize: '1.1rem' }}>Review for <strong>{selectedTeam?.name}</strong> submitted by {reviewerName}.</p>
-                    </div>
-                </motion.div>
-            ), { duration: 4000 });
+            toast.success(`Review for ${selectedTeam?.name} submitted!`, {
+                position: 'top-center',
+                style: {
+                    background: 'var(--bg-card)',
+                    color: 'var(--text-main)',
+                    border: '1px solid var(--accent)',
+                    borderRadius: '1rem',
+                    padding: '1rem 1.5rem',
+                    fontWeight: 600,
+                    fontSize: '1rem'
+                },
+                iconTheme: {
+                    primary: 'var(--accent)',
+                    secondary: '#fff'
+                }
+            });
 
             setStep('team');
             setSelectedTeam(null);
@@ -531,11 +511,11 @@ const ReviewerDashboard = () => {
                                             width: '56px',
                                             height: '56px',
                                             borderRadius: '50%',
-                                            background: completedSessions.includes(session.id) ? 'var(--accent)' : 'rgba(99, 102, 241, 0.1)',
+                                            background: completedSessions.includes(session.id) ? 'var(--accent)' : 'rgba(59, 130, 246, 0.1)',
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
-                                            color: completedSessions.includes(session.id) ? 'white' : 'var(--primary)',
+                                            color: completedSessions.includes(session.id) ? 'white' : 'var(--accent)',
                                             marginBottom: '0.5rem'
                                         }}>
                                             {completedSessions.includes(session.id) ? <CheckCircle size={28} /> : <Clock size={28} />}
@@ -661,7 +641,7 @@ const ReviewerDashboard = () => {
                         >
                             <div style={{ display: 'flex', gap: '2.5rem' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                    <div style={{ width: '40px', height: '40px', borderRadius: '0.75rem', background: 'rgba(99, 102, 241, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
+                                    <div style={{ width: '40px', height: '40px', borderRadius: '0.75rem', background: 'rgba(59, 130, 246, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)' }}>
                                         <Users size={20} />
                                     </div>
                                     <div>
@@ -670,7 +650,7 @@ const ReviewerDashboard = () => {
                                     </div>
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                    <div style={{ width: '40px', height: '40px', borderRadius: '0.75rem', background: 'rgba(236, 72, 153, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--secondary)' }}>
+                                    <div style={{ width: '40px', height: '40px', borderRadius: '0.75rem', background: 'rgba(6, 182, 212, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--secondary)' }}>
                                         <Clock size={20} />
                                     </div>
                                     <div>
@@ -775,9 +755,9 @@ const ReviewerDashboard = () => {
                                                         height: '60px',
                                                         borderRadius: '1.5rem',
                                                         border: '2px solid',
-                                                        borderColor: marks[selectedSession?.criteria[activeCriterionIndex].id] === i ? 'var(--primary)' : 'rgba(255,255,255,0.05)',
-                                                        background: marks[selectedSession?.criteria[activeCriterionIndex].id] === i ? 'rgba(99, 102, 241, 0.15)' : 'rgba(255,255,255,0.02)',
-                                                        color: marks[selectedSession?.criteria[activeCriterionIndex].id] === i ? 'var(--primary)' : 'rgba(255,255,255,0.4)',
+                                                        borderColor: marks[selectedSession?.criteria[activeCriterionIndex].id] === i ? 'var(--accent)' : 'rgba(255,255,255,0.05)',
+                                                        background: marks[selectedSession?.criteria[activeCriterionIndex].id] === i ? 'rgba(59, 130, 246, 0.15)' : 'rgba(255,255,255,0.02)',
+                                                        color: marks[selectedSession?.criteria[activeCriterionIndex].id] === i ? 'var(--accent)' : 'rgba(255,255,255,0.4)',
                                                         fontSize: '1.4rem',
                                                         fontWeight: 900,
                                                         cursor: 'pointer',
@@ -792,13 +772,13 @@ const ReviewerDashboard = () => {
                                         {/* ❗ ITEM 6: Smart Inline Validation */}
                                         <div style={{ textAlign: 'center' }}>
                                             <div style={{ fontSize: '1.2rem', color: 'var(--text-muted)', marginBottom: '2rem' }}>
-                                                Score: <motion.span key={marks[selectedSession?.criteria[activeCriterionIndex].id]} initial={{ scale: 1.5, color: 'var(--primary)' }} animate={{ scale: 1, color: 'var(--primary)' }} style={{ fontWeight: 900, fontSize: '2rem' }}>{marks[selectedSession?.criteria[activeCriterionIndex].id] || 0}</motion.span> <span style={{ opacity: 0.3 }}>/ {selectedSession?.criteria[activeCriterionIndex].maxMarks}</span>
+                                                Score: <motion.span key={marks[selectedSession?.criteria[activeCriterionIndex].id]} initial={{ scale: 1.5, color: 'var(--accent)' }} animate={{ scale: 1, color: 'var(--accent)' }} style={{ fontWeight: 900, fontSize: '2rem' }}>{marks[selectedSession?.criteria[activeCriterionIndex].id] || 0}</motion.span> <span style={{ opacity: 0.3 }}>/ {selectedSession?.criteria[activeCriterionIndex].maxMarks}</span>
                                             </div>
                                             <div style={{ height: '6px', width: '100%', maxWidth: '400px', margin: '0 auto', background: 'rgba(255,255,255,0.03)', borderRadius: '3px', overflow: 'hidden' }}>
                                                 <motion.div
                                                     initial={{ width: 0 }}
                                                     animate={{ width: `${((marks[selectedSession?.criteria[activeCriterionIndex].id] || 0) / selectedSession?.criteria[activeCriterionIndex].maxMarks) * 100}%` }}
-                                                    style={{ height: '100%', background: 'linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%)' }}
+                                                    style={{ height: '100%', background: 'linear-gradient(90deg, var(--accent) 0%, var(--secondary) 100%)' }}
                                                 />
                                             </div>
                                         </div>
@@ -989,20 +969,20 @@ const ReviewerDashboard = () => {
                                 onClick={() => {
                                     toast("Shortcut: Arrow keys to navigate, Enter to proceed.", {
                                         icon: '⌨️',
-                                        style: { borderRadius: '1rem', background: 'rgba(15, 23, 42, 0.9)', color: 'white', border: '1px solid var(--primary)' }
+                                        style: { borderRadius: '1rem', background: 'var(--bg-card)', color: 'white', border: '1px solid var(--accent)' }
                                     });
                                 }}
                                 style={{
                                     width: '64px',
                                     height: '64px',
                                     borderRadius: '50%',
-                                    background: 'rgba(15, 23, 42, 0.9)',
-                                    color: 'var(--primary)',
+                                    background: 'var(--bg-card)',
+                                    color: 'var(--accent)',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     boxShadow: '0 15px 35px rgba(0,0,0,0.5)',
-                                    border: '1px solid rgba(99, 102, 241, 0.2)',
+                                    border: '1px solid rgba(59, 130, 246, 0.2)',
                                     backdropFilter: 'blur(10px)'
                                 }}
                             >

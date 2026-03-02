@@ -442,8 +442,8 @@ const AdminDashboard = () => {
                         flex: 1,
                         padding: '1rem',
                         borderRadius: '0.85rem',
-                        background: (activeTab === 'create' || editingEvent) ? 'rgba(99, 102, 241, 0.1)' : 'transparent',
-                        color: (activeTab === 'create' || editingEvent) ? 'var(--primary)' : 'var(--text-muted)',
+                        background: (activeTab === 'create' || editingEvent) ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
+                        color: (activeTab === 'create' || editingEvent) ? 'var(--accent)' : 'var(--text-muted)',
                         transition: 'all 0.3s ease',
                         fontWeight: 700,
                         display: 'flex',
@@ -461,8 +461,8 @@ const AdminDashboard = () => {
                         flex: 1,
                         padding: '1rem',
                         borderRadius: '0.85rem',
-                        background: activeTab === 'manage' ? 'rgba(99, 102, 241, 0.1)' : 'transparent',
-                        color: activeTab === 'manage' ? 'var(--primary)' : 'var(--text-muted)',
+                        background: activeTab === 'manage' ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
+                        color: activeTab === 'manage' ? 'var(--accent)' : 'var(--text-muted)',
                         transition: 'all 0.3s ease',
                         fontWeight: 700,
                         display: 'flex',
@@ -486,8 +486,8 @@ const AdminDashboard = () => {
                         flex: 1,
                         padding: '1rem',
                         borderRadius: '0.85rem',
-                        background: activeTab === 'analytics' ? 'rgba(99, 102, 241, 0.1)' : 'transparent',
-                        color: activeTab === 'analytics' ? 'var(--primary)' : 'var(--text-muted)',
+                        background: activeTab === 'analytics' ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
+                        color: activeTab === 'analytics' ? 'var(--accent)' : 'var(--text-muted)',
                         transition: 'all 0.3s ease',
                         fontWeight: 700,
                         display: 'flex',
@@ -544,7 +544,7 @@ const AdminDashboard = () => {
                                             onChange={(e) => setNumSessions(parseInt(e.target.value))}
                                             style={{ flex: 1 }}
                                         />
-                                        <span className="badge" style={{ background: 'var(--primary)', color: 'white', minWidth: '40px', textAlign: 'center' }}>
+                                        <span className="badge" style={{ background: 'var(--accent)', color: 'white', minWidth: '40px', textAlign: 'center' }}>
                                             {numSessions}
                                         </span>
                                     </div>
@@ -589,7 +589,7 @@ const AdminDashboard = () => {
                                         className="glass"
                                         style={{ padding: '1.5rem' }}
                                     >
-                                        <h3 style={{ marginBottom: '1rem', color: 'var(--primary)', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
+                                        <h3 style={{ marginBottom: '1rem', color: 'var(--accent)', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.5rem' }}>
                                             Session {session.number}
                                         </h3>
 

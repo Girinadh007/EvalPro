@@ -6,39 +6,33 @@
   font-weight: 400;
 
   color-scheme: dark;
-  color: rgba(255, 255, 255, 0.95);
-  background-color: #030712;
+  color: #E5E7EB;
+  background-color: #0F172A;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  /* Vibrant Color System */
-  --primary: #6366f1;
-  /* Indigo */
-  --primary-glow: rgba(99, 102, 241, 0.5);
-  --secondary: #ec4899;
-  /* Pink */
-  --accent: #10b981;
-  /* Emerald */
-  --info: #0ea5e9;
-  /* Sky blue */
-  --warning: #f59e0b;
-  /* Amber */
-  --error: #ef4444;
-  /* Red */
+  /* Bold & Tech Color System */
+  --primary: #1F2937;
+  /* Charcoal */
+  --accent: #3B82F6;
+  /* Electric Blue */
+  --secondary: #06B6D4;
+  /* Cyan */
+  --accent-glow: rgba(59, 130, 246, 0.4);
 
-  --bg-dark: #030712;
-  --bg-card: rgba(15, 23, 42, 0.4);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --text-main: #f8fafc;
+  --bg-dark: #0F172A;
+  --bg-card: #111827;
+  --glass-border: rgba(255, 255, 255, 0.05);
+  --text-main: #E5E7EB;
   --text-muted: #94a3b8;
 
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-glow: 0 0 20px -5px var(--primary-glow);
+  --shadow-glow: 0 0 25px -5px var(--accent-glow);
 }
 
 * {
@@ -140,14 +134,13 @@ body::before {
 /* Premium Glassmorphism */
 .glass {
   background: var(--bg-card);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(25px) saturate(120%);
+  -webkit-backdrop-filter: blur(25px) saturate(120%);
   border: 1px solid var(--glass-border);
   border-radius: 1.5rem;
   box-shadow:
-    0 10px 25px -5px rgba(0, 0, 0, 0.3),
-    0 8px 10px -6px rgba(0, 0, 0, 0.3),
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.05);
+    0 10px 40px -10px rgba(0, 0, 0, 0.5),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.03);
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
 }
 
@@ -186,9 +179,9 @@ select {
 input:focus,
 textarea:focus,
 select:focus {
-  border-color: var(--primary);
+  border-color: var(--accent);
   box-shadow:
-    0 0 0 4px rgba(99, 102, 241, 0.15),
+    0 0 0 4px rgba(59, 130, 246, 0.1),
     inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
   outline: none;
   background: rgba(15, 23, 42, 0.8);
@@ -211,14 +204,16 @@ select:focus {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%);
+  background: var(--primary);
   color: white;
-  box-shadow: var(--shadow-glow);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
 }
 
 .btn-primary:hover {
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 10px 20px -5px var(--primary-glow);
+  background: #2d3748;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
 }
 
 .btn-primary:active {
@@ -265,9 +260,22 @@ select:focus {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  background: rgba(99, 102, 241, 0.1);
-  color: var(--primary);
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--accent);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.text-accent {
+  color: var(--accent);
+}
+
+.text-primary {
+  color: var(--accent);
+}
+
+/* Primary text in dash is often an accent highlight */
+.text-muted {
+  color: var(--text-muted);
 }
 
 .container {
@@ -298,7 +306,7 @@ select:focus {
 }
 
 .brand-icon {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  background: linear-gradient(135deg, var(--accent) 0%, var(--secondary) 100%);
   padding: 0.5rem;
   border-radius: 0.75rem;
   display: flex;
@@ -316,7 +324,7 @@ select:focus {
 }
 
 .brand-text span {
-  color: var(--primary);
+  color: var(--accent);
 }
 
 .brand-text .secondary-text {
