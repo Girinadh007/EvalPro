@@ -231,21 +231,25 @@ const AdminDashboard = () => {
     };
 
     const handleCreateEvent = async () => {
-        // 0. Pre-process Student Data (Fill Down logic for Team Names)
+        // 0. Pre-process Student Data (Fill Down logic for Team Names and PS)
         let lastTeam = 'Unassigned';
+        let lastPS = '';
         const processedData = studentsData.map(s => {
-            // Find potential team key
+            // Find potential team/PS keys
             const rawTeam = s.team_id || s.team || s['team name'] || s['Team Name'] || s['TEAM'] || '';
+            const rawPS = s.ps || s['PS'] || s['problem statement'] || s['Problem Statement'] || '';
             const studentName = s.name || s['student name'] || s['Student Name'] || s['Name'] || '';
             const studentId = (s.student_id || s.id || s['Sl No.'] || s['sl no'] || Math.random().toString()).toString();
 
             if (rawTeam && rawTeam.toString().trim() !== '') {
                 lastTeam = rawTeam.toString().trim();
+                lastPS = rawPS.toString().trim();
             }
 
             return {
                 ...s,
                 final_team: lastTeam,
+                final_ps: lastPS,
                 final_name: studentName,
                 final_id: studentId
             };
@@ -272,11 +276,16 @@ const AdminDashboard = () => {
 
         // 3. Process Teams and Students
         // Get unique teams from processed data
-        const teamNames = Array.from(new Set(processedData.map(s => s.final_team)));
+        const teamMapWithPS = new Map();
+        processedData.forEach(s => {
+            if (!teamMapWithPS.has(s.final_team)) {
+                teamMapWithPS.set(s.final_team, s.final_ps);
+            }
+        });
 
         const { data: teamsData, error: teamsError } = await supabase
             .from('teams')
-            .upsert(teamNames.map(name => ({ name })), { onConflict: 'name' })
+            .upsert(Array.from(teamMapWithPS.entries()).map(([name, ps]) => ({ name, ps })), { onConflict: 'name' })
             .select();
 
         if (teamsError) throw teamsError;
@@ -312,7 +321,7 @@ const AdminDashboard = () => {
             toast.error('Some students could not be saved: ' + studError.message);
         }
 
-        toast.success(`Event created with ${processedData.length} students across ${teamNames.length} teams!`);
+        toast.success(`Event created with ${processedData.length} students across ${teamMapWithPS.size} teams!`);
         cancelEdit();
         fetchEvents();
         setActiveTab('manage');
@@ -332,7 +341,7 @@ const AdminDashboard = () => {
             // 2. Fetch all teams and their students
             const { data: teamsWithStudents } = await supabase
                 .from('teams')
-                .select('id, name, students(student_id, name)')
+                .select('id, name, ps, students(student_id, name)')
                 .order('name');
 
             if (!teamsWithStudents) return;
@@ -356,6 +365,7 @@ const AdminDashboard = () => {
                 team.students.forEach((student: any) => {
                     const row: any = {
                         'Team Name': team.name,
+                        'PS': team.ps || 'N/A',
                         'Student Name': student.name,
                     };
 

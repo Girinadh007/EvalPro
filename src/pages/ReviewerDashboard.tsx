@@ -77,7 +77,7 @@ const ReviewerDashboard = () => {
             .ilike('name', `%${searchTerm}%`)
             .limit(5);
 
-        // Search students by name and get their teams
+        // Search students by name and get their teams (including PS)
         const { data: studentsByName } = await supabase
             .from('students')
             .select('*, teams(*, students(*))')
@@ -355,6 +355,7 @@ const ReviewerDashboard = () => {
                                     >
                                         <div>
                                             <h4 style={{ margin: 0, fontSize: '1.125rem' }}>{team.name}</h4>
+                                            {team.ps && <p style={{ fontSize: '0.8rem', color: 'var(--primary)', marginTop: '0.25rem' }}>PS: {team.ps}</p>}
                                             <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>{team.students ? team.students.length : 0} Members</p>
                                         </div>
                                         <ArrowRight size={20} color="var(--primary)" />
@@ -377,11 +378,16 @@ const ReviewerDashboard = () => {
                                 <button onClick={() => setStep('team')} className="btn btn-outline" style={{ padding: '0.5rem' }}><ArrowLeft size={18} /></button>
                                 <h2 style={{ margin: 0 }}>Select Review Session</h2>
                             </div>
-
-                            <div style={{ marginBottom: '2rem' }}>
-                                <div className="badge" style={{ background: 'rgba(99, 102, 241, 0.1)', color: 'var(--primary)', padding: '0.5rem 1rem' }}>
+                            <div style={{ marginBottom: '2rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                <div className="badge" style={{ background: 'rgba(99, 102, 241, 0.1)', color: 'var(--primary)', padding: '0.5rem 1rem', display: 'inline-block', alignSelf: 'flex-start' }}>
                                     Reviewing: <span style={{ fontWeight: 'bold' }}>{selectedTeam?.name}</span>
                                 </div>
+                                {selectedTeam?.ps && (
+                                    <div className="glass" style={{ padding: '0.75rem 1rem', borderLeft: '3px solid var(--primary)', background: 'rgba(255,255,255,0.02)' }}>
+                                        <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--text-muted)' }}>Problem Statement:</p>
+                                        <p style={{ margin: 0, fontWeight: 600 }}>{selectedTeam.ps}</p>
+                                    </div>
+                                )}
                             </div>
 
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
@@ -429,7 +435,10 @@ const ReviewerDashboard = () => {
                     >
                         <div className="glass" style={{ padding: '2.5rem' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                                <h2 style={{ margin: 0 }}>Attendance</h2>
+                                <div>
+                                    <h2 style={{ margin: 0 }}>Attendance</h2>
+                                    {selectedTeam?.ps && <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.875rem', color: 'var(--primary)' }}><strong>PS:</strong> {selectedTeam.ps}</p>}
+                                </div>
                                 <button
                                     className="btn btn-outline"
                                     style={{ fontSize: '0.75rem', padding: '0.4rem 0.8rem' }}

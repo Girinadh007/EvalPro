@@ -4,6 +4,7 @@
 CREATE TABLE IF NOT EXISTS teams (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   name TEXT NOT NULL UNIQUE,
+  ps TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
