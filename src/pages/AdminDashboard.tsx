@@ -7,7 +7,9 @@ import {
     FileSpreadsheet,
     CheckCircle2,
     TrendingUp,
-    Download
+    Download,
+    Pencil,
+    X
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { motion } from 'framer-motion';
@@ -24,6 +26,7 @@ const AdminDashboard = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [activeTab, setActiveTab] = useState<'create' | 'manage'>('create');
     const [existingEvents, setExistingEvents] = useState<any[]>([]);
+    const [editingEvent, setEditingEvent] = useState<any>(null);
 
     useEffect(() => {
         // Initialize sessions when numSessions changes
@@ -71,9 +74,41 @@ const AdminDashboard = () => {
         setSessions(newSessions);
     };
 
-    const handleCreateEvent = async () => {
+    const handleEditEvent = async (event: any) => {
+        setEditingEvent(event);
+        setEventName(event.name);
+        setNumSessions(event.num_sessions);
+
+        // Fetch sessions for this event
+        const { data: sessData } = await supabase
+            .from('review_sessions')
+            .select('*')
+            .eq('event_id', event.id)
+            .order('session_number', { ascending: true });
+
+        if (sessData) {
+            setSessions(sessData.map(s => ({
+                number: s.session_number,
+                criteria: s.criteria
+            })));
+        }
+
+        setActiveTab('create');
+    };
+
+    const cancelEdit = () => {
+        setEditingEvent(null);
+        setEventName('');
+        setNumSessions(1);
+        setSessions([{ number: 1, criteria: [{ id: Math.random().toString(36).substr(2, 9), label: 'Creativity', maxMarks: 10 }] }]);
+        setStudentsData([]);
+    };
+
+    const handleSaveEvent = async () => {
         if (!eventName) return toast.error('Please enter an event name');
-        if (studentsData.length === 0) return toast.error('Please upload student data');
+
+        // If creating new event, check for student data
+        if (!editingEvent && studentsData.length === 0) return toast.error('Please upload student data');
 
         // Validate criteria
         for (const session of sessions) {
@@ -83,98 +118,137 @@ const AdminDashboard = () => {
 
         setIsSaving(true);
         try {
-            // 0. Pre-process Student Data (Fill Down logic for Team Names)
-            let lastTeam = 'Unassigned';
-            const processedData = studentsData.map(s => {
-                // Find potential team key
-                const rawTeam = s.team_id || s.team || s['team name'] || s['Team Name'] || s['TEAM'] || '';
-                const studentName = s.name || s['student name'] || s['Student Name'] || s['Name'] || '';
-                const studentId = (s.student_id || s.id || s['Sl No.'] || s['sl no'] || Math.random().toString()).toString();
+            if (editingEvent) {
+                // Update existing event
+                const { error: eventError } = await supabase
+                    .from('evaluation_events')
+                    .update({ name: eventName, num_sessions: numSessions })
+                    .eq('id', editingEvent.id);
 
-                if (rawTeam && rawTeam.toString().trim() !== '') {
-                    lastTeam = rawTeam.toString().trim();
-                }
+                if (eventError) throw eventError;
 
-                return {
-                    ...s,
-                    final_team: lastTeam,
-                    final_name: studentName,
-                    final_id: studentId
-                };
-            }).filter(s => s.final_name); // Ignore rows with no names
+                // Update or Re-create sessions
+                const sessionsToUpsert = sessions.map(s => ({
+                    event_id: editingEvent.id,
+                    session_number: s.number,
+                    criteria: s.criteria
+                }));
 
-            // 1. Create Event
-            const { data: eventData, error: eventError } = await supabase
-                .from('evaluation_events')
-                .insert([{ name: eventName, num_sessions: numSessions }])
-                .select()
-                .single();
+                // First, delete sessions that are no longer needed (if numSessions decreased)
+                await supabase
+                    .from('review_sessions')
+                    .delete()
+                    .eq('event_id', editingEvent.id)
+                    .gt('session_number', numSessions);
 
-            if (eventError) throw eventError;
+                const { error: sessError } = await supabase
+                    .from('review_sessions')
+                    .upsert(sessionsToUpsert, { onConflict: 'event_id,session_number' });
 
-            // 2. Create Sessions
-            const sessionsToInsert = sessions.map(s => ({
-                event_id: eventData.id,
-                session_number: s.number,
-                criteria: s.criteria
-            }));
+                if (sessError) throw sessError;
 
-            const { error: sessError } = await supabase.from('review_sessions').insert(sessionsToInsert);
-            if (sessError) throw sessError;
-
-            // 3. Process Teams and Students
-            // Get unique teams from processed data
-            const teamNames = Array.from(new Set(processedData.map(s => s.final_team)));
-
-            const { data: teamsData, error: teamsError } = await supabase
-                .from('teams')
-                .upsert(teamNames.map(name => ({ name })), { onConflict: 'name' })
-                .select();
-
-            if (teamsError) throw teamsError;
-
-            // Map team names to IDs
-            const teamMap = teamsData.reduce((acc, team) => {
-                acc[team.name] = team.id;
-                return acc;
-            }, {} as Record<string, string>);
-
-            // Insert Students
-            const studentsToInsert = processedData.map((s: any) => ({
-                team_id: teamMap[s.final_team],
-                student_id: s.final_id,
-                name: s.final_name,
-                details: s
-            }));
-
-            // 4. Deduplicate studentsToInsert to prevent internal collision during bulk upsert
-            const uniqueStudentsMap = new Map();
-            studentsToInsert.forEach(s => {
-                const key = `${s.team_id}_${s.student_id}`;
-                uniqueStudentsMap.set(key, s);
-            });
-            const deduplicatedStudents = Array.from(uniqueStudentsMap.values());
-
-            const { error: studError } = await supabase
-                .from('students')
-                .upsert(deduplicatedStudents, { onConflict: 'team_id,student_id' });
-
-            if (studError) {
-                console.error('Student insertion error:', studError);
-                toast.error('Some students could not be saved: ' + studError.message);
+                toast.success('Event updated successfully!');
+                cancelEdit();
+                fetchEvents();
+                setActiveTab('manage');
+            } else {
+                // Original Create Logic
+                await handleCreateEvent();
             }
-
-            toast.success(`Event created with ${processedData.length} students across ${teamNames.length} teams!`);
-            setEventName('');
-            setStudentsData([]);
-            fetchEvents();
-            setActiveTab('manage');
         } catch (err: any) {
             console.error(err);
             toast.error('Error saving event: ' + err.message);
         } finally {
             setIsSaving(false);
         }
+    };
+
+    const handleCreateEvent = async () => {
+        // 0. Pre-process Student Data (Fill Down logic for Team Names)
+        let lastTeam = 'Unassigned';
+        const processedData = studentsData.map(s => {
+            // Find potential team key
+            const rawTeam = s.team_id || s.team || s['team name'] || s['Team Name'] || s['TEAM'] || '';
+            const studentName = s.name || s['student name'] || s['Student Name'] || s['Name'] || '';
+            const studentId = (s.student_id || s.id || s['Sl No.'] || s['sl no'] || Math.random().toString()).toString();
+
+            if (rawTeam && rawTeam.toString().trim() !== '') {
+                lastTeam = rawTeam.toString().trim();
+            }
+
+            return {
+                ...s,
+                final_team: lastTeam,
+                final_name: studentName,
+                final_id: studentId
+            };
+        }).filter(s => s.final_name); // Ignore rows with no names
+
+        // 1. Create Event
+        const { data: eventData, error: eventError } = await supabase
+            .from('evaluation_events')
+            .insert([{ name: eventName, num_sessions: numSessions }])
+            .select()
+            .single();
+
+        if (eventError) throw eventError;
+
+        // 2. Create Sessions
+        const sessionsToInsert = sessions.map(s => ({
+            event_id: eventData.id,
+            session_number: s.number,
+            criteria: s.criteria
+        }));
+
+        const { error: sessError } = await supabase.from('review_sessions').insert(sessionsToInsert);
+        if (sessError) throw sessError;
+
+        // 3. Process Teams and Students
+        // Get unique teams from processed data
+        const teamNames = Array.from(new Set(processedData.map(s => s.final_team)));
+
+        const { data: teamsData, error: teamsError } = await supabase
+            .from('teams')
+            .upsert(teamNames.map(name => ({ name })), { onConflict: 'name' })
+            .select();
+
+        if (teamsError) throw teamsError;
+
+        // Map team names to IDs
+        const teamMap = teamsData.reduce((acc, team) => {
+            acc[team.name] = team.id;
+            return acc;
+        }, {} as Record<string, string>);
+
+        // Insert Students
+        const studentsToInsert = processedData.map((s: any) => ({
+            team_id: teamMap[s.final_team],
+            student_id: s.final_id,
+            name: s.final_name,
+            details: s
+        }));
+
+        // 4. Deduplicate studentsToInsert to prevent internal collision during bulk upsert
+        const uniqueStudentsMap = new Map();
+        studentsToInsert.forEach(s => {
+            const key = `${s.team_id}_${s.student_id}`;
+            uniqueStudentsMap.set(key, s);
+        });
+        const deduplicatedStudents = Array.from(uniqueStudentsMap.values());
+
+        const { error: studError } = await supabase
+            .from('students')
+            .upsert(deduplicatedStudents, { onConflict: 'team_id,student_id' });
+
+        if (studError) {
+            console.error('Student insertion error:', studError);
+            toast.error('Some students could not be saved: ' + studError.message);
+        }
+
+        toast.success(`Event created with ${processedData.length} students across ${teamNames.length} teams!`);
+        cancelEdit();
+        fetchEvents();
+        setActiveTab('manage');
     };
 
     const downloadMarks = async (eventId: string, eventName: string) => {
@@ -282,16 +356,19 @@ const AdminDashboard = () => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
             <div style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid var(--border-color)', marginBottom: '1rem' }}>
                 <button
-                    onClick={() => setActiveTab('create')}
+                    onClick={() => {
+                        if (editingEvent) cancelEdit();
+                        setActiveTab('create');
+                    }}
                     style={{
                         padding: '1rem 2rem',
                         background: 'none',
-                        color: activeTab === 'create' ? 'var(--primary)' : 'var(--text-muted)',
-                        borderBottom: activeTab === 'create' ? '2px solid var(--primary)' : 'none',
+                        color: (activeTab === 'create' || editingEvent) ? 'var(--primary)' : 'var(--text-muted)',
+                        borderBottom: (activeTab === 'create' || editingEvent) ? '2px solid var(--primary)' : 'none',
                         fontWeight: 600
                     }}
                 >
-                    Create Event
+                    {editingEvent ? 'Edit Event' : 'Create Event'}
                 </button>
                 <button
                     onClick={() => setActiveTab('manage')}
@@ -310,9 +387,16 @@ const AdminDashboard = () => {
             {activeTab === 'create' ? (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                     <section className="glass" style={{ padding: '2rem' }}>
-                        <h2 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                            <Settings className="text-primary" /> Basic Configuration
-                        </h2>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                            <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                <Settings className="text-primary" /> {editingEvent ? 'Edit Event Details' : 'Basic Configuration'}
+                            </h2>
+                            {editingEvent && (
+                                <button className="btn btn-outline" onClick={cancelEdit}>
+                                    <X size={18} /> Cancel Edit
+                                </button>
+                            )}
+                        </div>
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -347,7 +431,11 @@ const AdminDashboard = () => {
                         <h2 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                             <FileSpreadsheet className="text-primary" /> Student Data
                         </h2>
-                        {studentsData.length === 0 ? (
+                        {editingEvent ? (
+                            <div className="glass" style={{ padding: '1.5rem', opacity: 0.7 }}>
+                                <p style={{ margin: 0, color: 'var(--text-muted)' }}>Student data modification is disabled during event edit.</p>
+                            </div>
+                        ) : studentsData.length === 0 ? (
                             <ExcelUpload onDataLoaded={setStudentsData} />
                         ) : (
                             <div className="glass" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -427,10 +515,10 @@ const AdminDashboard = () => {
                         <button
                             className="btn btn-primary"
                             style={{ padding: '1rem 3rem', fontSize: '1.125rem' }}
-                            onClick={handleCreateEvent}
+                            onClick={handleSaveEvent}
                             disabled={isSaving}
                         >
-                            {isSaving ? 'Creating Event...' : 'Confirm & Save Event'}
+                            {isSaving ? 'Saving...' : editingEvent ? 'Update Event' : 'Confirm & Save Event'}
                             <Save size={20} />
                         </button>
                     </div>
@@ -457,6 +545,13 @@ const AdminDashboard = () => {
                                         </p>
                                     </div>
                                     <div style={{ display: 'flex', gap: '0.75rem' }}>
+                                        <button
+                                            className="btn btn-outline"
+                                            style={{ borderColor: 'var(--primary)', color: 'var(--primary)' }}
+                                            onClick={() => handleEditEvent(event)}
+                                        >
+                                            <Pencil size={18} /> Edit
+                                        </button>
                                         <button
                                             className="btn btn-outline"
                                             style={{ borderColor: 'var(--accent)', color: 'var(--accent)' }}
