@@ -250,47 +250,33 @@ const ReviewerDashboard = () => {
 
                             <div style={{ textAlign: 'left', maxWidth: '400px', margin: '0 auto' }}>
                                 <label style={{ display: 'block', marginBottom: '0.75rem', fontWeight: 600, fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-                                    Select or Enter Your Name
+                                    Full Name
                                 </label>
-                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1.5rem' }}>
-                                    {['Reviewer 1', 'Reviewer 2', 'Reviewer 3', 'Reviewer 4', 'Reviewer 5'].map(name => (
-                                        <button
-                                            key={name}
-                                            onClick={() => {
-                                                setReviewerName(name);
-                                            }}
-                                            className="badge"
-                                            style={{
-                                                cursor: 'pointer',
-                                                background: reviewerName === name ? 'var(--primary)' : 'rgba(255,255,255,0.05)',
-                                                color: reviewerName === name ? 'white' : 'var(--text-muted)',
-                                                border: '1px solid var(--border-color)',
-                                                padding: '0.6rem 1rem',
-                                                fontSize: '0.875rem'
-                                            }}
-                                        >
-                                            {name}
-                                        </button>
-                                    ))}
-                                </div>
-                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                                     <input
                                         type="text"
-                                        placeholder="Enter custom name..."
+                                        placeholder="Enter your name manually..."
                                         value={reviewerName}
                                         onChange={(e) => setReviewerName(e.target.value)}
                                         className="glass"
-                                        style={{ flex: 1, padding: '0.875rem' }}
+                                        style={{
+                                            flex: 1,
+                                            padding: '1rem',
+                                            fontSize: '1.125rem',
+                                            textAlign: 'center'
+                                        }}
+                                        autoFocus
                                     />
                                     <button
                                         className="btn btn-primary"
                                         disabled={!reviewerName.trim()}
+                                        style={{ padding: '1rem', justifyContent: 'center' }}
                                         onClick={() => {
                                             localStorage.setItem('eval_reviewer_name', reviewerName);
                                             setStep('team');
                                         }}
                                     >
-                                        Next <ArrowRight size={18} />
+                                        Start Reviewing <ArrowRight size={18} />
                                     </button>
                                 </div>
                             </div>
