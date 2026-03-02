@@ -24,7 +24,6 @@ const ReviewerDashboard = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [teams, setTeams] = useState<any[]>([]);
     const [selectedTeam, setSelectedTeam] = useState<any>(null);
-    const [events, setEvents] = useState<any[]>([]);
     const [selectedEvent, setSelectedEvent] = useState<any>(null);
     const [sessions, setSessions] = useState<any[]>([]);
     const [selectedSession, setSelectedSession] = useState<any>(null);
@@ -93,7 +92,6 @@ const ReviewerDashboard = () => {
     const fetchEvents = async () => {
         const { data } = await supabase.from('evaluation_events').select('*').order('created_at', { ascending: false });
         if (data) {
-            setEvents(data);
             if (data.length > 0) {
                 if (!selectedEvent || !data.find(e => e.id === selectedEvent.id)) {
                     setSelectedEvent(data[0]);
