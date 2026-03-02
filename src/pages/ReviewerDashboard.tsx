@@ -641,7 +641,7 @@ const ReviewerDashboard = () => {
                         >
                             <div style={{ display: 'flex', gap: '2.5rem' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                    <div style={{ width: '40px', height: '40px', borderRadius: '0.75rem', background: 'rgba(59, 130, 246, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)' }}>
+                                    <div style={{ width: '40px', height: '40px', borderRadius: '0.75rem', background: 'rgba(37, 99, 235, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
                                         <Users size={20} />
                                     </div>
                                     <div>
@@ -650,7 +650,7 @@ const ReviewerDashboard = () => {
                                     </div>
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                    <div style={{ width: '40px', height: '40px', borderRadius: '0.75rem', background: 'rgba(6, 182, 212, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--secondary)' }}>
+                                    <div style={{ width: '40px', height: '40px', borderRadius: '0.75rem', background: 'rgba(34, 211, 238, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)' }}>
                                         <Clock size={20} />
                                     </div>
                                     <div>
@@ -715,7 +715,7 @@ const ReviewerDashboard = () => {
                                                 color: 'var(--primary)',
                                                 textTransform: 'uppercase',
                                                 letterSpacing: '0.1em',
-                                                background: 'rgba(99, 102, 241, 0.1)',
+                                                background: 'rgba(37, 99, 235, 0.08)',
                                                 padding: '0.4rem 1rem',
                                                 borderRadius: '2rem'
                                             }}>
@@ -755,9 +755,9 @@ const ReviewerDashboard = () => {
                                                         height: '60px',
                                                         borderRadius: '1.5rem',
                                                         border: '2px solid',
-                                                        borderColor: marks[selectedSession?.criteria[activeCriterionIndex].id] === i ? 'var(--accent)' : 'rgba(255,255,255,0.05)',
-                                                        background: marks[selectedSession?.criteria[activeCriterionIndex].id] === i ? 'rgba(59, 130, 246, 0.15)' : 'rgba(255,255,255,0.02)',
-                                                        color: marks[selectedSession?.criteria[activeCriterionIndex].id] === i ? 'var(--accent)' : 'rgba(255,255,255,0.4)',
+                                                        borderColor: marks[selectedSession?.criteria[activeCriterionIndex].id] === i ? 'var(--primary)' : 'rgba(255,255,255,0.05)',
+                                                        background: marks[selectedSession?.criteria[activeCriterionIndex].id] === i ? 'rgba(37, 99, 235, 0.15)' : 'rgba(255,255,255,0.02)',
+                                                        color: marks[selectedSession?.criteria[activeCriterionIndex].id] === i ? 'var(--primary)' : 'rgba(255,255,255,0.4)',
                                                         fontSize: '1.4rem',
                                                         fontWeight: 900,
                                                         cursor: 'pointer',
@@ -772,13 +772,13 @@ const ReviewerDashboard = () => {
                                         {/* ❗ ITEM 6: Smart Inline Validation */}
                                         <div style={{ textAlign: 'center' }}>
                                             <div style={{ fontSize: '1.2rem', color: 'var(--text-muted)', marginBottom: '2rem' }}>
-                                                Score: <motion.span key={marks[selectedSession?.criteria[activeCriterionIndex].id]} initial={{ scale: 1.5, color: 'var(--accent)' }} animate={{ scale: 1, color: 'var(--accent)' }} style={{ fontWeight: 900, fontSize: '2rem' }}>{marks[selectedSession?.criteria[activeCriterionIndex].id] || 0}</motion.span> <span style={{ opacity: 0.3 }}>/ {selectedSession?.criteria[activeCriterionIndex].maxMarks}</span>
+                                                Score: <motion.span key={marks[selectedSession?.criteria[activeCriterionIndex].id]} initial={{ scale: 1.5, color: 'var(--primary)' }} animate={{ scale: 1, color: 'var(--primary)' }} style={{ fontWeight: 900, fontSize: '2rem' }}>{marks[selectedSession?.criteria[activeCriterionIndex].id] || 0}</motion.span> <span style={{ opacity: 0.3 }}>/ {selectedSession?.criteria[activeCriterionIndex].maxMarks}</span>
                                             </div>
                                             <div style={{ height: '6px', width: '100%', maxWidth: '400px', margin: '0 auto', background: 'rgba(255,255,255,0.03)', borderRadius: '3px', overflow: 'hidden' }}>
                                                 <motion.div
                                                     initial={{ width: 0 }}
                                                     animate={{ width: `${((marks[selectedSession?.criteria[activeCriterionIndex].id] || 0) / selectedSession?.criteria[activeCriterionIndex].maxMarks) * 100}%` }}
-                                                    style={{ height: '100%', background: 'linear-gradient(90deg, var(--accent) 0%, var(--secondary) 100%)' }}
+                                                    style={{ height: '100%', background: 'linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%)' }}
                                                 />
                                             </div>
                                         </div>
@@ -847,7 +847,7 @@ const ReviewerDashboard = () => {
                                                         setIsFinalSummary(false);
                                                     }}
                                                     style={{
-                                                        background: 'rgba(99, 102, 241, 0.05)',
+                                                        background: 'rgba(37, 99, 235, 0.05)',
                                                         border: 'none',
                                                         color: 'var(--primary)',
                                                         fontSize: '0.85rem',
@@ -947,8 +947,8 @@ const ReviewerDashboard = () => {
                                     width: '64px',
                                     height: '64px',
                                     borderRadius: '50%',
-                                    background: 'rgba(15, 23, 42, 0.9)',
-                                    color: '#f87171',
+                                    background: 'var(--bg-card)',
+                                    color: 'var(--danger)',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
@@ -982,7 +982,7 @@ const ReviewerDashboard = () => {
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     boxShadow: '0 15px 35px rgba(0,0,0,0.5)',
-                                    border: '1px solid rgba(59, 130, 246, 0.2)',
+                                    border: '1px solid rgba(34, 211, 238, 0.2)',
                                     backdropFilter: 'blur(10px)'
                                 }}
                             >
