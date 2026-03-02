@@ -31,9 +31,18 @@ function App() {
     localStorage.removeItem('user_role');
   };
 
+  const AnimatedBackground = () => (
+    <div className="bg-blobs">
+      <div className="blob"></div>
+      <div className="blob"></div>
+      <div className="blob"></div>
+    </div>
+  );
+
   if (userRole === 'none') {
     return (
       <div className="app-container">
+        <AnimatedBackground />
         <Toaster position="top-right" />
         <Login onLogin={handleLogin} />
       </div>
@@ -42,45 +51,64 @@ function App() {
 
   return (
     <div className="app-container">
+      <AnimatedBackground />
       <Toaster position="top-right" />
 
       {/* Premium Header */}
       <header className="glass" style={{
-        margin: '1rem',
-        padding: '1rem 2rem',
+        margin: '1.5rem',
+        padding: '1.25rem 2.5rem',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
         position: 'sticky',
-        top: '1rem',
-        zIndex: 100
+        top: '1.5rem',
+        zIndex: 100,
+        boxShadow: '0 20px 40px -10px rgba(0,0,0,0.5)'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
           <div style={{
-            background: 'var(--primary)',
-            padding: '0.5rem',
-            borderRadius: '0.75rem',
+            background: 'linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)',
+            padding: '0.65rem',
+            borderRadius: '1rem',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            boxShadow: '0 0 20px -5px var(--primary-glow)'
           }}>
-            <ShieldCheck size={24} color="white" />
+            <ShieldCheck size={28} color="white" />
           </div>
-          <h1 style={{ fontSize: '1.25rem' }}>EvalSystem <span style={{ color: 'var(--primary)', opacity: 0.8 }}>Pro</span></h1>
+          <div>
+            <h1 style={{ fontSize: '1.5rem', margin: 0, letterSpacing: '-0.05em' }}>
+              Eval<span style={{ color: 'var(--primary)' }}>System</span> <span style={{ color: 'var(--secondary)' }}>Pro</span>
+            </h1>
+          </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-          <div className="badge" style={{ background: 'rgba(99, 102, 241, 0.1)', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Users size={14} />
-            {userRole === 'head' ? 'Administration' : 'Reviewer'}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
+          <div className="badge" style={{
+            background: 'rgba(99, 102, 241, 0.1)',
+            color: 'var(--primary)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.65rem',
+            padding: '0.5rem 1.25rem',
+            border: '1px solid rgba(99, 102, 241, 0.2)'
+          }}>
+            <Users size={16} />
+            <span style={{ fontWeight: 800 }}>{userRole === 'head' ? 'Administration' : 'Reviewer'}</span>
           </div>
           <button
             className="btn btn-outline"
-            style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}
+            style={{
+              padding: '0.65rem 1.25rem',
+              fontSize: '0.9rem',
+              borderRadius: '0.85rem'
+            }}
             onClick={handleLogout}
           >
-            <LogOut size={16} />
-            Sign Out
+            <LogOut size={18} />
+            <span>Sign Out</span>
           </button>
         </div>
       </header>
@@ -93,8 +121,16 @@ function App() {
         )}
       </main>
 
-      <footer style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-        &copy; 2026 EvalSystem Pro. All rights reserved.
+      <footer style={{
+        padding: '4rem 2rem',
+        textAlign: 'center',
+        color: 'var(--text-muted)',
+        fontSize: '0.9rem',
+        borderTop: '1px solid rgba(255,255,255,0.05)',
+        marginTop: '4rem'
+      }}>
+        <div style={{ marginBottom: '1rem', fontWeight: 700 }}>EvalSystem Pro &copy; 2026</div>
+        <div style={{ opacity: 0.5 }}>Advanced Event Management & Team Evaluation Platform</div>
       </footer>
     </div>
   );

@@ -6,16 +6,17 @@ import {
     Settings,
     FileSpreadsheet,
     CheckCircle2,
+    Trophy,
+    BarChart3,
+    Medal,
     TrendingUp,
     Download,
     Pencil,
     X,
-    Trophy,
-    BarChart3,
-    Medal
+    LayoutGrid,
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import ExcelUpload from '../components/ExcelUpload';
 import { supabase } from '../lib/supabase';
 import type { SessionCriteria } from '../lib/supabase';
@@ -431,32 +432,46 @@ const AdminDashboard = () => {
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-            <div style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid var(--border-color)', marginBottom: '1rem' }}>
+            <div className="glass" style={{ display: 'flex', padding: '0.5rem', gap: '0.5rem', marginBottom: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '1.25rem' }}>
                 <button
                     onClick={() => {
                         if (editingEvent) cancelEdit();
                         setActiveTab('create');
                     }}
                     style={{
-                        padding: '1rem 2rem',
-                        background: 'none',
+                        flex: 1,
+                        padding: '1rem',
+                        borderRadius: '0.85rem',
+                        background: (activeTab === 'create' || editingEvent) ? 'rgba(99, 102, 241, 0.1)' : 'transparent',
                         color: (activeTab === 'create' || editingEvent) ? 'var(--primary)' : 'var(--text-muted)',
-                        borderBottom: (activeTab === 'create' || editingEvent) ? '2px solid var(--primary)' : 'none',
-                        fontWeight: 600
+                        transition: 'all 0.3s ease',
+                        fontWeight: 700,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.5rem'
                     }}
                 >
+                    <Plus size={18} />
                     {editingEvent ? 'Edit Event' : 'Create Event'}
                 </button>
                 <button
                     onClick={() => setActiveTab('manage')}
                     style={{
-                        padding: '1rem 2rem',
-                        background: 'none',
+                        flex: 1,
+                        padding: '1rem',
+                        borderRadius: '0.85rem',
+                        background: activeTab === 'manage' ? 'rgba(99, 102, 241, 0.1)' : 'transparent',
                         color: activeTab === 'manage' ? 'var(--primary)' : 'var(--text-muted)',
-                        borderBottom: activeTab === 'manage' ? '2px solid var(--primary)' : 'none',
-                        fontWeight: 600
+                        transition: 'all 0.3s ease',
+                        fontWeight: 700,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.5rem'
                     }}
                 >
+                    <LayoutGrid size={18} />
                     Manage Events
                 </button>
                 <button
@@ -468,297 +483,354 @@ const AdminDashboard = () => {
                         }
                     }}
                     style={{
-                        padding: '1rem 2rem',
-                        background: 'none',
+                        flex: 1,
+                        padding: '1rem',
+                        borderRadius: '0.85rem',
+                        background: activeTab === 'analytics' ? 'rgba(99, 102, 241, 0.1)' : 'transparent',
                         color: activeTab === 'analytics' ? 'var(--primary)' : 'var(--text-muted)',
-                        borderBottom: activeTab === 'analytics' ? '2px solid var(--primary)' : 'none',
-                        fontWeight: 600
+                        transition: 'all 0.3s ease',
+                        fontWeight: 700,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.5rem'
                     }}
                 >
+                    <Trophy size={18} />
                     Analytics & Leaderboard
                 </button>
             </div>
 
-            {activeTab === 'create' ? (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                    <section className="glass" style={{ padding: '2rem' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                            <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                <Settings className="text-primary" /> {editingEvent ? 'Edit Event Details' : 'Basic Configuration'}
+            <AnimatePresence mode="wait">
+                {activeTab === 'create' ? (
+                    <motion.div
+                        key="tab-create"
+                        initial={{ opacity: 0, scale: 0.98, y: 10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.98, y: -10 }}
+                        transition={{ duration: 0.3 }}
+                        style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}
+                    >
+                        <section className="glass" style={{ padding: '2rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                                <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                    <Settings className="text-primary" /> {editingEvent ? 'Edit Event Details' : 'Basic Configuration'}
+                                </h2>
+                                {editingEvent && (
+                                    <button className="btn btn-outline" onClick={cancelEdit}>
+                                        <X size={18} /> Cancel Edit
+                                    </button>
+                                )}
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                    <label style={{ fontSize: '0.875rem', fontWeight: 600 }}>Event Name</label>
+                                    <input
+                                        type="text"
+                                        placeholder="e.g. Hackathon 2026"
+                                        value={eventName}
+                                        onChange={(e) => setEventName(e.target.value)}
+                                    />
+                                </div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                    <label style={{ fontSize: '0.875rem', fontWeight: 600 }}>Number of Review Sessions</label>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                        <input
+                                            type="range"
+                                            min="1"
+                                            max="5"
+                                            value={numSessions}
+                                            onChange={(e) => setNumSessions(parseInt(e.target.value))}
+                                            style={{ flex: 1 }}
+                                        />
+                                        <span className="badge" style={{ background: 'var(--primary)', color: 'white', minWidth: '40px', textAlign: 'center' }}>
+                                            {numSessions}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section>
+                            <h2 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                <FileSpreadsheet className="text-primary" /> Student Data
                             </h2>
-                            {editingEvent && (
-                                <button className="btn btn-outline" onClick={cancelEdit}>
-                                    <X size={18} /> Cancel Edit
-                                </button>
+                            {editingEvent ? (
+                                <div className="glass" style={{ padding: '1.5rem', opacity: 0.7 }}>
+                                    <p style={{ margin: 0, color: 'var(--text-muted)' }}>Student data modification is disabled during event edit.</p>
+                                </div>
+                            ) : studentsData.length === 0 ? (
+                                <ExcelUpload onDataLoaded={setStudentsData} />
+                            ) : (
+                                <div className="glass" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                        <CheckCircle2 color="var(--accent)" />
+                                        <div>
+                                            <h4 style={{ margin: 0 }}>Data Loaded</h4>
+                                            <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>{studentsData.length} students across multiple teams</p>
+                                        </div>
+                                    </div>
+                                    <button className="btn btn-outline" onClick={() => setStudentsData([])}>Change File</button>
+                                </div>
+                            )}
+                        </section>
+
+                        <section>
+                            <h2 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                <TrendingUp className="text-primary" /> Review Criteria per Session
+                            </h2>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '1.5rem' }}>
+                                {sessions.map((session, sIdx) => (
+                                    <motion.div
+                                        key={session.number}
+                                        initial={{ scale: 0.95, opacity: 0 }}
+                                        animate={{ scale: 1, opacity: 1 }}
+                                        className="glass"
+                                        style={{ padding: '1.5rem' }}
+                                    >
+                                        <h3 style={{ marginBottom: '1rem', color: 'var(--primary)', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
+                                            Session {session.number}
+                                        </h3>
+
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                            {session.criteria.map((criterion, cIdx) => (
+                                                <div key={criterion.id} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end' }}>
+                                                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                                                        <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Criterion Label</label>
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Label"
+                                                            value={criterion.label}
+                                                            onChange={(e) => updateCriterion(sIdx, cIdx, 'label', e.target.value)}
+                                                            style={{ padding: '0.5rem' }}
+                                                        />
+                                                    </div>
+                                                    <div style={{ width: '80px', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                                                        <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Max Marks</label>
+                                                        <input
+                                                            type="number"
+                                                            value={criterion.maxMarks}
+                                                            onChange={(e) => updateCriterion(sIdx, cIdx, 'maxMarks', parseInt(e.target.value))}
+                                                            style={{ padding: '0.5rem' }}
+                                                        />
+                                                    </div>
+                                                    <button
+                                                        onClick={() => removeCriterion(sIdx, cIdx)}
+                                                        style={{ padding: '0.5rem', background: 'none', color: 'var(--error)' }}
+                                                    >
+                                                        <Trash2 size={18} />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                            <button
+                                                className="btn btn-outline"
+                                                style={{ padding: '0.5rem', width: '100%', fontSize: '0.875rem' }}
+                                                onClick={() => addCriterion(sIdx)}
+                                            >
+                                                <Plus size={16} /> Add Criterion
+                                            </button>
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </div>
+                        </section>
+
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
+                            <button
+                                className="btn btn-primary"
+                                style={{ padding: '1rem 3rem', fontSize: '1.125rem' }}
+                                onClick={handleSaveEvent}
+                                disabled={isSaving}
+                            >
+                                {isSaving ? 'Saving...' : editingEvent ? 'Update Event' : 'Confirm & Save Event'}
+                                <Save size={20} />
+                            </button>
+                        </div>
+                    </motion.div>
+                ) : activeTab === 'manage' ? (
+                    <motion.div
+                        key="tab-manage"
+                        initial={{ opacity: 0, scale: 0.98, y: 10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.98, y: -10 }}
+                        transition={{ duration: 0.3 }}
+                        className="glass"
+                        style={{ padding: '2.5rem' }}
+                    >
+                        <h2 style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                            <LayoutGrid className="text-primary" /> Existing Events
+                        </h2>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                            {existingEvents.length === 0 ? (
+                                <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+                                    <p>No events found. Start by creating a new evaluation event!</p>
+                                </div>
+                            ) : (
+                                existingEvents.map((event, index) => (
+                                    <motion.div
+                                        key={event.id}
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: index * 0.1 }}
+                                        className="glass"
+                                        style={{
+                                            padding: '1.75rem',
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                            background: 'rgba(255,255,255,0.02)',
+                                            border: '1px solid rgba(255,255,255,0.05)'
+                                        }}
+                                    >
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                                            <div style={{
+                                                width: '56px',
+                                                height: '56px',
+                                                borderRadius: '1rem',
+                                                background: 'rgba(99, 102, 241, 0.1)',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                color: 'var(--primary)'
+                                            }}>
+                                                <TrendingUp size={28} />
+                                            </div>
+                                            <div>
+                                                <h3 style={{ margin: 0, fontSize: '1.25rem' }}>{event.name}</h3>
+                                                <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
+                                                    <CheckCircle2 size={14} /> {event.num_sessions} Sessions • Created {new Date(event.created_at).toLocaleDateString()}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '0.75rem' }}>
+                                            <button
+                                                className="btn btn-primary"
+                                                style={{ padding: '0.65rem 1.25rem', fontSize: '0.9rem' }}
+                                                onClick={() => fetchLeaderboard(event)}
+                                            >
+                                                <Trophy size={16} /> Results
+                                            </button>
+                                            <button
+                                                className="btn btn-outline"
+                                                style={{ padding: '0.65rem 1rem' }}
+                                                onClick={() => handleEditEvent(event)}
+                                            >
+                                                <Pencil size={16} />
+                                            </button>
+                                            <button
+                                                className="btn btn-outline"
+                                                style={{ padding: '0.65rem 1rem', color: 'var(--info)', borderColor: 'rgba(14, 165, 233, 0.4)' }}
+                                                onClick={() => downloadMarks(event.id, event.name)}
+                                            >
+                                                <Download size={16} />
+                                            </button>
+                                            <button
+                                                className="btn btn-outline"
+                                                style={{ padding: '0.65rem 1rem', color: 'var(--error)', borderColor: 'rgba(239, 68, 68, 0.4)' }}
+                                                onClick={() => handleDeleteEvent(event.id, event.name)}
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                    </motion.div>
+                                ))
                             )}
                         </div>
-
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                <label style={{ fontSize: '0.875rem', fontWeight: 600 }}>Event Name</label>
-                                <input
-                                    type="text"
-                                    placeholder="e.g. Hackathon 2026"
-                                    value={eventName}
-                                    onChange={(e) => setEventName(e.target.value)}
-                                />
-                            </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                <label style={{ fontSize: '0.875rem', fontWeight: 600 }}>Number of Review Sessions</label>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                    <input
-                                        type="range"
-                                        min="1"
-                                        max="5"
-                                        value={numSessions}
-                                        onChange={(e) => setNumSessions(parseInt(e.target.value))}
-                                        style={{ flex: 1 }}
-                                    />
-                                    <span className="badge" style={{ background: 'var(--primary)', color: 'white', minWidth: '40px', textAlign: 'center' }}>
-                                        {numSessions}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section>
-                        <h2 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                            <FileSpreadsheet className="text-primary" /> Student Data
-                        </h2>
-                        {editingEvent ? (
-                            <div className="glass" style={{ padding: '1.5rem', opacity: 0.7 }}>
-                                <p style={{ margin: 0, color: 'var(--text-muted)' }}>Student data modification is disabled during event edit.</p>
-                            </div>
-                        ) : studentsData.length === 0 ? (
-                            <ExcelUpload onDataLoaded={setStudentsData} />
-                        ) : (
-                            <div className="glass" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                    <CheckCircle2 color="var(--accent)" />
-                                    <div>
-                                        <h4 style={{ margin: 0 }}>Data Loaded</h4>
-                                        <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>{studentsData.length} students across multiple teams</p>
-                                    </div>
-                                </div>
-                                <button className="btn btn-outline" onClick={() => setStudentsData([])}>Change File</button>
-                            </div>
-                        )}
-                    </section>
-
-                    <section>
-                        <h2 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                            <TrendingUp className="text-primary" /> Review Criteria per Session
-                        </h2>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '1.5rem' }}>
-                            {sessions.map((session, sIdx) => (
-                                <motion.div
-                                    key={session.number}
-                                    initial={{ scale: 0.95, opacity: 0 }}
-                                    animate={{ scale: 1, opacity: 1 }}
+                    </motion.div>
+                ) : (
+                    <motion.div
+                        key="tab-analytics"
+                        initial={{ opacity: 0, scale: 0.98, y: 10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.98, y: -10 }}
+                        transition={{ duration: 0.3 }}
+                        style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}
+                    >
+                        <section className="glass" style={{ padding: '2rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                                <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                    <BarChart3 className="text-primary" /> Event Analytics: {analyticsEvent?.name || 'Select an Event'}
+                                </h2>
+                                <select
                                     className="glass"
-                                    style={{ padding: '1.5rem' }}
+                                    style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.05)', color: 'white' }}
+                                    value={analyticsEvent?.id || ''}
+                                    onChange={(e) => {
+                                        const event = existingEvents.find(ev => ev.id === e.target.value);
+                                        if (event) fetchLeaderboard(event);
+                                    }}
                                 >
-                                    <h3 style={{ marginBottom: '1rem', color: 'var(--primary)', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
-                                        Session {session.number}
-                                    </h3>
-
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                        {session.criteria.map((criterion, cIdx) => (
-                                            <div key={criterion.id} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end' }}>
-                                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                                                    <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Criterion Label</label>
-                                                    <input
-                                                        type="text"
-                                                        placeholder="Label"
-                                                        value={criterion.label}
-                                                        onChange={(e) => updateCriterion(sIdx, cIdx, 'label', e.target.value)}
-                                                        style={{ padding: '0.5rem' }}
-                                                    />
-                                                </div>
-                                                <div style={{ width: '80px', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                                                    <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Max Marks</label>
-                                                    <input
-                                                        type="number"
-                                                        value={criterion.maxMarks}
-                                                        onChange={(e) => updateCriterion(sIdx, cIdx, 'maxMarks', parseInt(e.target.value))}
-                                                        style={{ padding: '0.5rem' }}
-                                                    />
-                                                </div>
-                                                <button
-                                                    onClick={() => removeCriterion(sIdx, cIdx)}
-                                                    style={{ padding: '0.5rem', background: 'none', color: 'var(--error)' }}
-                                                >
-                                                    <Trash2 size={18} />
-                                                </button>
-                                            </div>
-                                        ))}
-                                        <button
-                                            className="btn btn-outline"
-                                            style={{ padding: '0.5rem', width: '100%', fontSize: '0.875rem' }}
-                                            onClick={() => addCriterion(sIdx)}
-                                        >
-                                            <Plus size={16} /> Add Criterion
-                                        </button>
-                                    </div>
-                                </motion.div>
-                            ))}
-                        </div>
-                    </section>
-
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
-                        <button
-                            className="btn btn-primary"
-                            style={{ padding: '1rem 3rem', fontSize: '1.125rem' }}
-                            onClick={handleSaveEvent}
-                            disabled={isSaving}
-                        >
-                            {isSaving ? 'Saving...' : editingEvent ? 'Update Event' : 'Confirm & Save Event'}
-                            <Save size={20} />
-                        </button>
-                    </div>
-                </motion.div>
-            ) : activeTab === 'manage' ? (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="glass" style={{ padding: '2rem' }}>
-                    <h2 style={{ marginBottom: '1.5rem' }}>Existing Events</h2>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        {existingEvents.length === 0 ? (
-                            <p style={{ color: 'var(--text-muted)' }}>No events found. Create your first one!</p>
-                        ) : (
-                            existingEvents.map(event => (
-                                <div key={event.id} className="glass" style={{
-                                    padding: '1.5rem',
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                    background: 'rgba(255,255,255,0.03)'
-                                }}>
-                                    <div>
-                                        <h3 style={{ margin: 0 }}>{event.name}</h3>
-                                        <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-                                            {event.num_sessions} Sessions • Created {new Date(event.created_at).toLocaleDateString()}
-                                        </p>
-                                    </div>
-                                    <div style={{ display: 'flex', gap: '0.75rem' }}>
-                                        <button
-                                            className="btn btn-outline"
-                                            style={{ borderColor: 'var(--primary)', color: 'var(--primary)' }}
-                                            onClick={() => fetchLeaderboard(event)}
-                                        >
-                                            <Trophy size={18} /> Results
-                                        </button>
-                                        <button
-                                            className="btn btn-outline"
-                                            style={{ borderColor: 'var(--primary)', color: 'var(--primary)', opacity: 0.7 }}
-                                            onClick={() => handleEditEvent(event)}
-                                        >
-                                            <Pencil size={18} /> Edit
-                                        </button>
-                                        <button
-                                            className="btn btn-outline"
-                                            style={{ borderColor: 'var(--accent)', color: 'var(--accent)' }}
-                                            onClick={() => downloadMarks(event.id, event.name)}
-                                        >
-                                            <Download size={18} /> Export
-                                        </button>
-                                        <button
-                                            className="btn btn-outline"
-                                            style={{ borderColor: 'var(--error)', color: 'var(--error)' }}
-                                            onClick={() => handleDeleteEvent(event.id, event.name)}
-                                        >
-                                            <Trash2 size={18} />
-                                        </button>
-                                    </div>
-                                </div>
-                            ))
-                        )}
-                    </div>
-                </motion.div>
-            ) : (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                    <section className="glass" style={{ padding: '2rem' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                            <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                <BarChart3 className="text-primary" /> Event Analytics: {analyticsEvent?.name || 'Select an Event'}
-                            </h2>
-                            <select
-                                className="glass"
-                                style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.05)', color: 'white' }}
-                                value={analyticsEvent?.id || ''}
-                                onChange={(e) => {
-                                    const event = existingEvents.find(ev => ev.id === e.target.value);
-                                    if (event) fetchLeaderboard(event);
-                                }}
-                            >
-                                <option value="" style={{ background: '#1a1a1a' }}>Select Event...</option>
-                                {existingEvents.map(ev => (
-                                    <option key={ev.id} value={ev.id} style={{ background: '#1a1a1a' }}>{ev.name}</option>
-                                ))}
-                            </select>
-                        </div>
-
-                        {!leaderboard ? (
-                            <p style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '3rem' }}>Select an event to view the leaderboard findings.</p>
-                        ) : (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
-                                {/* Overall Rankings */}
-                                <div className="glass" style={{ background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1))', padding: '2rem' }}>
-                                    <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem', color: 'var(--primary)' }}>
-                                        <Trophy /> Overall Top Teams (Combined Sessions)
-                                    </h3>
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
-                                        {leaderboard.overall.map((team, idx) => (
-                                            <div key={team.teamName} style={{
-                                                textAlign: 'center',
-                                                padding: '1.5rem',
-                                                background: 'rgba(255,255,255,0.05)',
-                                                borderRadius: '1rem',
-                                                border: idx === 0 ? '2px solid var(--primary)' : '1px solid var(--border-color)',
-                                                position: 'relative',
-                                                overflow: 'hidden'
-                                            }}>
-                                                <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>
-                                                    {idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉'}
-                                                </div>
-                                                <h4 style={{ margin: '0 0 0.5rem 0' }}>{team.teamName}</h4>
-                                                <div className="badge" style={{ background: 'var(--primary)' }}>{team.score} Total Marks</div>
-                                                {idx === 0 && <div style={{ position: 'absolute', top: 10, right: 10 }}><Medal size={20} color="gold" /></div>}
-                                            </div>
-                                        ))}
-                                        {leaderboard.overall.length === 0 && <p>No data available yet.</p>}
-                                    </div>
-                                </div>
-
-                                {/* Per Session Rankings */}
-                                <div>
-                                    <h3 style={{ marginBottom: '1.5rem' }}>Session-wise Rankings</h3>
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
-                                        {leaderboard.sessions.map(sess => (
-                                            <div key={sess.number} className="glass" style={{ padding: '1.5rem' }}>
-                                                <h4 style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem', marginBottom: '1rem', color: 'var(--accent)' }}>
-                                                    Session {sess.number}
-                                                </h4>
-                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                                                    {sess.topTeams.map((team, idx) => (
-                                                        <div key={team.teamName} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                                                <span style={{ fontWeight: 800, color: 'var(--text-muted)', width: '20px' }}>{idx + 1}.</span>
-                                                                <span>{team.teamName}</span>
-                                                            </div>
-                                                            <span className="badge" style={{ fontSize: '0.75rem' }}>{team.score} M</span>
-                                                        </div>
-                                                    ))}
-                                                    {sess.topTeams.length === 0 && <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>No reviews yet.</p>}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
+                                    <option value="" style={{ background: '#1a1a1a' }}>Select Event...</option>
+                                    {existingEvents.map(ev => (
+                                        <option key={ev.id} value={ev.id} style={{ background: '#1a1a1a' }}>{ev.name}</option>
+                                    ))}
+                                </select>
                             </div>
-                        )}
-                    </section>
-                </motion.div>
-            )}
+
+                            {!leaderboard ? (
+                                <p style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '3rem' }}>Select an event to view the leaderboard findings.</p>
+                            ) : (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
+                                    {/* Overall Rankings */}
+                                    <div className="glass" style={{ background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1))', padding: '2rem' }}>
+                                        <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem', color: 'var(--primary)' }}>
+                                            <Trophy /> Overall Top Teams (Combined Sessions)
+                                        </h3>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
+                                            {leaderboard.overall.map((team, idx) => (
+                                                <div key={team.teamName} style={{
+                                                    textAlign: 'center',
+                                                    padding: '1.5rem',
+                                                    background: 'rgba(255,255,255,0.05)',
+                                                    borderRadius: '1rem',
+                                                    border: idx === 0 ? '2px solid var(--primary)' : '1px solid var(--border-color)',
+                                                    position: 'relative',
+                                                    overflow: 'hidden'
+                                                }}>
+                                                    <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>
+                                                        {idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉'}
+                                                    </div>
+                                                    <h4 style={{ margin: '0 0 0.5rem 0' }}>{team.teamName}</h4>
+                                                    <div className="badge" style={{ background: 'var(--primary)' }}>{team.score} Total Marks</div>
+                                                    {idx === 0 && <div style={{ position: 'absolute', top: 10, right: 10 }}><Medal size={20} color="gold" /></div>}
+                                                </div>
+                                            ))}
+                                            {leaderboard.overall.length === 0 && <p>No data available yet.</p>}
+                                        </div>
+                                    </div>
+
+                                    {/* Per Session Rankings */}
+                                    <div>
+                                        <h3 style={{ marginBottom: '1.5rem' }}>Session-wise Rankings</h3>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+                                            {leaderboard.sessions.map(sess => (
+                                                <div key={sess.number} className="glass" style={{ padding: '1.5rem' }}>
+                                                    <h4 style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem', marginBottom: '1rem', color: 'var(--accent)' }}>
+                                                        Session {sess.number}
+                                                    </h4>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                                        {sess.topTeams.map((team, idx) => (
+                                                            <div key={team.teamName} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                                                    <span style={{ fontWeight: 800, color: 'var(--text-muted)', width: '20px' }}>{idx + 1}.</span>
+                                                                    <span>{team.teamName}</span>
+                                                                </div>
+                                                                <span className="badge" style={{ fontSize: '0.75rem' }}>{team.score} M</span>
+                                                            </div>
+                                                        ))}
+                                                        {sess.topTeams.length === 0 && <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>No reviews yet.</p>}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </section>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

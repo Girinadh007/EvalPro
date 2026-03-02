@@ -4,7 +4,9 @@ import {
     CheckCircle2,
     Clock,
     ArrowRight,
-    ArrowLeft
+    ArrowLeft,
+    User,
+    Sparkles
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -228,55 +230,63 @@ const ReviewerDashboard = () => {
                 {step === 'identity' && (
                     <motion.div
                         key="identity-setup"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 1.05 }}
+                        transition={{ duration: 0.4 }}
                     >
-                        <div className="glass" style={{ padding: '3rem', textAlign: 'center' }}>
-                            <div style={{
-                                width: '64px',
-                                height: '64px',
-                                borderRadius: '50%',
-                                background: 'rgba(99, 102, 241, 0.1)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                margin: '0 auto 1.5rem'
-                            }}>
-                                <CheckCircle2 size={32} color="var(--primary)" />
-                            </div>
-                            <h2 style={{ marginBottom: '0.5rem' }}>Welcome, Reviewer!</h2>
-                            <p style={{ color: 'var(--text-muted)', marginBottom: '2.5rem' }}>Please identify yourself to begin the evaluation process.</p>
+                        <div className="glass" style={{ padding: '4rem 3rem', textAlign: 'center', maxWidth: '500px', margin: '0 auto' }}>
+                            <motion.div
+                                initial={{ scale: 0.5, rotate: -20 }}
+                                animate={{ scale: 1, rotate: 0 }}
+                                transition={{ type: 'spring', stiffness: 200, damping: 12 }}
+                                style={{
+                                    width: '80px',
+                                    height: '80px',
+                                    borderRadius: '2rem',
+                                    background: 'linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    margin: '0 auto 2rem',
+                                    boxShadow: '0 20px 40px -10px var(--primary-glow)'
+                                }}
+                            >
+                                <User size={40} color="white" />
+                            </motion.div>
+                            <h1 style={{ marginBottom: '1rem', fontSize: '2.5rem' }}>Welcome</h1>
+                            <p style={{ color: 'var(--text-muted)', marginBottom: '3rem', fontSize: '1.1rem', lineHeight: 1.6 }}>Identify yourself to begin evaluating teams and providing feedback.</p>
 
-                            <div style={{ textAlign: 'left', maxWidth: '400px', margin: '0 auto' }}>
-                                <label style={{ display: 'block', marginBottom: '0.75rem', fontWeight: 600, fontSize: '0.875rem', color: 'var(--text-muted)' }}>
+                            <div style={{ textAlign: 'left', width: '100%' }}>
+                                <label style={{ display: 'block', marginBottom: '0.75rem', fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-muted)' }}>
                                     Full Name
                                 </label>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                                     <input
                                         type="text"
-                                        placeholder="Enter your name manually..."
+                                        placeholder="Enter your name..."
                                         value={reviewerName}
                                         onChange={(e) => setReviewerName(e.target.value)}
                                         className="glass"
                                         style={{
-                                            flex: 1,
-                                            padding: '1rem',
-                                            fontSize: '1.125rem',
-                                            textAlign: 'center'
+                                            width: '100%',
+                                            padding: '1.25rem',
+                                            fontSize: '1.25rem',
+                                            textAlign: 'center',
+                                            background: 'rgba(255,255,255,0.02)'
                                         }}
                                         autoFocus
                                     />
                                     <button
                                         className="btn btn-primary"
                                         disabled={!reviewerName.trim()}
-                                        style={{ padding: '1rem', justifyContent: 'center' }}
+                                        style={{ padding: '1.25rem', justifyContent: 'center', fontSize: '1.1rem' }}
                                         onClick={() => {
                                             localStorage.setItem('eval_reviewer_name', reviewerName);
                                             setStep('team');
                                         }}
                                     >
-                                        Start Reviewing <ArrowRight size={18} />
+                                        Start Reviewing <ArrowRight size={22} />
                                     </button>
                                 </div>
                             </div>
@@ -287,79 +297,136 @@ const ReviewerDashboard = () => {
                 {step === 'team' && (
                     <motion.div
                         key="team-select"
-                        initial={{ opacity: 0, x: -20 }}
+                        initial={{ opacity: 0, x: -30 }}
                         animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: 20 }}
+                        exit={{ opacity: 0, x: 30 }}
+                        transition={{ duration: 0.4 }}
                     >
-                        <div className="glass" style={{ padding: '2.5rem' }}>
-                            <div style={{ marginBottom: '2rem' }}>
-                                <label style={{ display: 'block', marginBottom: '0.75rem', fontWeight: 600, fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-                                    Select Evaluation Event
-                                </label>
-                                <select
-                                    className="glass"
-                                    style={{
-                                        width: '100%',
-                                        padding: '1rem',
-                                        borderRadius: '0.75rem',
-                                        background: 'rgba(255,255,255,0.05)',
-                                        color: 'white',
-                                        border: '1px solid var(--border-color)',
-                                        outline: 'none',
-                                        fontSize: '1rem'
-                                    }}
-                                    value={selectedEvent?.id || ''}
-                                    onChange={(e) => setSelectedEvent(events.find(ev => ev.id === e.target.value))}
-                                >
-                                    {events.map(event => (
-                                        <option key={event.id} value={event.id} style={{ background: '#1a1a1a' }}>
-                                            {event.name}
-                                        </option>
-                                    ))}
-                                    {events.length === 0 && <option value="">No events available</option>}
-                                </select>
+                        <div className="glass" style={{ padding: '3rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', marginBottom: '2.5rem' }}>
+                                <button onClick={() => setStep('identity')} className="btn btn-outline" style={{ padding: '0.75rem' }}>
+                                    <ArrowLeft size={20} />
+                                </button>
+                                <h1 style={{ margin: 0, fontSize: '2.5rem' }}>Find Team</h1>
                             </div>
 
-                            <h2 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                <Search className="text-primary" /> Find Team for Review
-                            </h2>
-                            <div style={{ position: 'relative' }}>
-                                <input
-                                    type="text"
-                                    placeholder="Search team name..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    style={{ width: '100%', paddingLeft: '3rem', fontSize: '1.125rem' }}
-                                    autoFocus
-                                />
-                                <Search size={20} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }} />
-                            </div>
-
-                            <div style={{ marginTop: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                {teams.map(team => (
-                                    <button
-                                        key={team.id}
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '3rem' }}>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '0.75rem', fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                                        Current Evaluation Event
+                                    </label>
+                                    <select
                                         className="glass"
-                                        onClick={() => handleTeamSelect(team)}
                                         style={{
-                                            padding: '1.25rem',
-                                            display: 'flex',
-                                            justifyContent: 'space-between',
-                                            alignItems: 'center',
-                                            textAlign: 'left',
                                             width: '100%',
-                                            cursor: 'pointer',
-                                            background: 'rgba(255,255,255,0.03)',
-                                            border: '1px solid var(--border-color)'
+                                            padding: '1rem',
+                                            borderRadius: '1rem',
+                                            background: 'rgba(255,255,255,0.05)',
+                                            color: 'white',
+                                            border: '1px solid var(--glass-border)',
+                                            fontSize: '1.1rem'
                                         }}
+                                        value={selectedEvent?.id || ''}
+                                        onChange={(e) => setSelectedEvent(events.find(ev => ev.id === e.target.value))}
                                     >
-                                        <div>
-                                            <h4 style={{ margin: 0, fontSize: '1.125rem' }}>{team.name}</h4>
-                                            <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>{team.students ? team.students.length : 0} Members</p>
+                                        {events.map(event => (
+                                            <option key={event.id} value={event.id} style={{ background: '#0f172a' }}>
+                                                {event.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div style={{ position: 'relative', alignSelf: 'flex-end' }}>
+                                    <div style={{ position: 'relative' }}>
+                                        <Search style={{ position: 'absolute', left: '1.25rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} size={24} />
+                                        <input
+                                            type="text"
+                                            placeholder="Search team or member..."
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                            style={{ width: '100%', paddingLeft: '3.5rem', fontSize: '1.1rem', height: '3.75rem' }}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
+                                <AnimatePresence mode="popLayout">
+                                    {teams.length === 0 && searchTerm.length >= 2 ? (
+                                        <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '4rem', opacity: 0.5 }}>
+                                            No teams match your search criteria.
                                         </div>
-                                        <ArrowRight size={20} color="var(--primary)" />
-                                    </button>
-                                ))}
+                                    ) : teams.map((team, index) => (
+                                        <motion.button
+                                            key={team.id}
+                                            layout
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: index * 0.05 }}
+                                            className="glass"
+                                            onClick={() => handleTeamSelect(team)}
+                                            style={{
+                                                padding: '2rem',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'flex-start',
+                                                textAlign: 'left',
+                                                cursor: 'pointer',
+                                                background: 'rgba(255,255,255,0.02)',
+                                                border: '1px solid rgba(255,255,255,0.05)',
+                                                gap: '1.5rem',
+                                                position: 'relative',
+                                                overflow: 'hidden'
+                                            }}
+                                            whileHover={{
+                                                y: -5,
+                                                background: 'rgba(99, 102, 241, 0.05)',
+                                                borderColor: 'rgba(99, 102, 241, 0.3)'
+                                            }}
+                                        >
+                                            <div style={{
+                                                width: '48px',
+                                                height: '48px',
+                                                borderRadius: '0.75rem',
+                                                background: 'rgba(99, 102, 241, 0.1)',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                color: 'var(--primary)',
+                                                marginBottom: '0.5rem'
+                                            }}>
+                                                <Sparkles size={24} />
+                                            </div>
+                                            <div>
+                                                <h3 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 800 }}>{team.name}</h3>
+                                                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', flexWrap: 'wrap' }}>
+                                                    <span className="badge" style={{ fontSize: '0.7rem' }}>
+                                                        {team.students ? team.students.length : 0} Members
+                                                    </span>
+                                                    <span className="badge" style={{ fontSize: '0.7rem', background: 'rgba(16, 185, 129, 0.1)', color: 'var(--accent)', borderColor: 'rgba(16, 185, 129, 0.2)' }}>
+                                                        Ready for Eval
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <ArrowRight
+                                                size={24}
+                                                style={{
+                                                    position: 'absolute',
+                                                    right: '1.5rem',
+                                                    top: '2rem',
+                                                    opacity: 0.3,
+                                                    color: 'var(--primary)'
+                                                }}
+                                            />
+                                        </motion.button>
+                                    ))}
+                                </AnimatePresence>
+                                {teams.length === 0 && searchTerm.length < 2 && (
+                                    <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '4rem', opacity: 0.5, border: '2px dashed rgba(255,255,255,0.05)', borderRadius: '2rem' }}>
+                                        <Search size={40} style={{ marginBottom: '1rem', opacity: 0.3 }} />
+                                        <p style={{ fontSize: '1.1rem' }}>Enter at least 2 characters to search for teams</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </motion.div>
