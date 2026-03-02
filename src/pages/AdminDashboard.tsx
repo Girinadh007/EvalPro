@@ -9,7 +9,10 @@ import {
     TrendingUp,
     Download,
     Pencil,
-    X
+    X,
+    Trophy,
+    BarChart3,
+    Medal
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { motion } from 'framer-motion';
@@ -24,9 +27,14 @@ const AdminDashboard = () => {
     const [studentsData, setStudentsData] = useState<any[]>([]);
     const [sessions, setSessions] = useState<{ number: number; criteria: SessionCriteria[] }[]>([]);
     const [isSaving, setIsSaving] = useState(false);
-    const [activeTab, setActiveTab] = useState<'create' | 'manage'>('create');
+    const [activeTab, setActiveTab] = useState<'create' | 'manage' | 'analytics'>('create');
     const [existingEvents, setExistingEvents] = useState<any[]>([]);
     const [editingEvent, setEditingEvent] = useState<any>(null);
+    const [analyticsEvent, setAnalyticsEvent] = useState<any>(null);
+    const [leaderboard, setLeaderboard] = useState<{
+        sessions: { number: number; topTeams: any[] }[];
+        overall: any[];
+    } | null>(null);
 
     useEffect(() => {
         // Initialize sessions when numSessions changes
@@ -160,6 +168,65 @@ const AdminDashboard = () => {
             toast.error('Error saving event: ' + err.message);
         } finally {
             setIsSaving(false);
+        }
+    };
+
+    const fetchLeaderboard = async (event: any) => {
+        setAnalyticsEvent(event);
+        try {
+            // 1. Fetch sessions
+            const { data: sessData } = await supabase
+                .from('review_sessions')
+                .select('id, session_number')
+                .eq('event_id', event.id)
+                .order('session_number', { ascending: true });
+
+            if (!sessData) return;
+
+            // 2. Fetch all reviews for these sessions
+            const sessionIds = sessData.map(s => s.id);
+            const { data: reviewsData } = await supabase
+                .from('reviews')
+                .select('*, teams(name)')
+                .in('session_id', sessionIds);
+
+            if (!reviewsData) return;
+
+            // 3. Group and sum scores
+            const sessionRankings = sessData.map(session => {
+                const sessionReviews = reviewsData.filter(r => r.session_id === session.id);
+                const teamScores = sessionReviews.map(r => ({
+                    teamName: r.teams?.name || 'Unknown',
+                    score: Object.values(r.marks).reduce((sum: number, val: any) => sum + Number(val), 0)
+                }));
+
+                return {
+                    number: session.session_number,
+                    topTeams: teamScores.sort((a, b) => b.score - a.score).slice(0, 3)
+                };
+            });
+
+            // 4. Calculate Overall
+            const overallMap = new Map();
+            reviewsData.forEach(r => {
+                const teamName = r.teams?.name || 'Unknown';
+                const score = Object.values(r.marks).reduce((sum: number, val: any) => sum + Number(val), 0);
+                overallMap.set(teamName, (overallMap.get(teamName) || 0) + score);
+            });
+
+            const overallRankings = Array.from(overallMap.entries())
+                .map(([name, score]) => ({ teamName: name, score }))
+                .sort((a, b) => b.score - a.score)
+                .slice(0, 3);
+
+            setLeaderboard({
+                sessions: sessionRankings,
+                overall: overallRankings
+            });
+            setActiveTab('analytics');
+        } catch (err) {
+            console.error(err);
+            toast.error('Failed to load leaderboard');
         }
     };
 
@@ -382,6 +449,24 @@ const AdminDashboard = () => {
                 >
                     Manage Events
                 </button>
+                <button
+                    onClick={() => {
+                        if (existingEvents.length > 0) {
+                            fetchLeaderboard(existingEvents[0]);
+                        } else {
+                            setActiveTab('analytics');
+                        }
+                    }}
+                    style={{
+                        padding: '1rem 2rem',
+                        background: 'none',
+                        color: activeTab === 'analytics' ? 'var(--primary)' : 'var(--text-muted)',
+                        borderBottom: activeTab === 'analytics' ? '2px solid var(--primary)' : 'none',
+                        fontWeight: 600
+                    }}
+                >
+                    Analytics & Leaderboard
+                </button>
             </div>
 
             {activeTab === 'create' ? (
@@ -523,7 +608,7 @@ const AdminDashboard = () => {
                         </button>
                     </div>
                 </motion.div>
-            ) : (
+            ) : activeTab === 'manage' ? (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="glass" style={{ padding: '2rem' }}>
                     <h2 style={{ marginBottom: '1.5rem' }}>Existing Events</h2>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -548,6 +633,13 @@ const AdminDashboard = () => {
                                         <button
                                             className="btn btn-outline"
                                             style={{ borderColor: 'var(--primary)', color: 'var(--primary)' }}
+                                            onClick={() => fetchLeaderboard(event)}
+                                        >
+                                            <Trophy size={18} /> Results
+                                        </button>
+                                        <button
+                                            className="btn btn-outline"
+                                            style={{ borderColor: 'var(--primary)', color: 'var(--primary)', opacity: 0.7 }}
                                             onClick={() => handleEditEvent(event)}
                                         >
                                             <Pencil size={18} /> Edit
@@ -557,20 +649,104 @@ const AdminDashboard = () => {
                                             style={{ borderColor: 'var(--accent)', color: 'var(--accent)' }}
                                             onClick={() => downloadMarks(event.id, event.name)}
                                         >
-                                            <Download size={18} /> Export Results
+                                            <Download size={18} /> Export
                                         </button>
                                         <button
                                             className="btn btn-outline"
                                             style={{ borderColor: 'var(--error)', color: 'var(--error)' }}
                                             onClick={() => handleDeleteEvent(event.id, event.name)}
                                         >
-                                            <Trash2 size={18} /> Delete
+                                            <Trash2 size={18} />
                                         </button>
                                     </div>
                                 </div>
                             ))
                         )}
                     </div>
+                </motion.div>
+            ) : (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                    <section className="glass" style={{ padding: '2rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                            <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                <BarChart3 className="text-primary" /> Event Analytics: {analyticsEvent?.name || 'Select an Event'}
+                            </h2>
+                            <select
+                                className="glass"
+                                style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.05)', color: 'white' }}
+                                value={analyticsEvent?.id || ''}
+                                onChange={(e) => {
+                                    const event = existingEvents.find(ev => ev.id === e.target.value);
+                                    if (event) fetchLeaderboard(event);
+                                }}
+                            >
+                                <option value="" style={{ background: '#1a1a1a' }}>Select Event...</option>
+                                {existingEvents.map(ev => (
+                                    <option key={ev.id} value={ev.id} style={{ background: '#1a1a1a' }}>{ev.name}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {!leaderboard ? (
+                            <p style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '3rem' }}>Select an event to view the leaderboard findings.</p>
+                        ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
+                                {/* Overall Rankings */}
+                                <div className="glass" style={{ background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1))', padding: '2rem' }}>
+                                    <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem', color: 'var(--primary)' }}>
+                                        <Trophy /> Overall Top Teams (Combined Sessions)
+                                    </h3>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
+                                        {leaderboard.overall.map((team, idx) => (
+                                            <div key={team.teamName} style={{
+                                                textAlign: 'center',
+                                                padding: '1.5rem',
+                                                background: 'rgba(255,255,255,0.05)',
+                                                borderRadius: '1rem',
+                                                border: idx === 0 ? '2px solid var(--primary)' : '1px solid var(--border-color)',
+                                                position: 'relative',
+                                                overflow: 'hidden'
+                                            }}>
+                                                <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>
+                                                    {idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉'}
+                                                </div>
+                                                <h4 style={{ margin: '0 0 0.5rem 0' }}>{team.teamName}</h4>
+                                                <div className="badge" style={{ background: 'var(--primary)' }}>{team.score} Total Marks</div>
+                                                {idx === 0 && <div style={{ position: 'absolute', top: 10, right: 10 }}><Medal size={20} color="gold" /></div>}
+                                            </div>
+                                        ))}
+                                        {leaderboard.overall.length === 0 && <p>No data available yet.</p>}
+                                    </div>
+                                </div>
+
+                                {/* Per Session Rankings */}
+                                <div>
+                                    <h3 style={{ marginBottom: '1.5rem' }}>Session-wise Rankings</h3>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+                                        {leaderboard.sessions.map(sess => (
+                                            <div key={sess.number} className="glass" style={{ padding: '1.5rem' }}>
+                                                <h4 style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem', marginBottom: '1rem', color: 'var(--accent)' }}>
+                                                    Session {sess.number}
+                                                </h4>
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                                    {sess.topTeams.map((team, idx) => (
+                                                        <div key={team.teamName} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                                                <span style={{ fontWeight: 800, color: 'var(--text-muted)', width: '20px' }}>{idx + 1}.</span>
+                                                                <span>{team.teamName}</span>
+                                                            </div>
+                                                            <span className="badge" style={{ fontSize: '0.75rem' }}>{team.score} M</span>
+                                                        </div>
+                                                    ))}
+                                                    {sess.topTeams.length === 0 && <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>No reviews yet.</p>}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </section>
                 </motion.div>
             )}
         </div>
