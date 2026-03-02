@@ -355,7 +355,6 @@ const ReviewerDashboard = () => {
                                     >
                                         <div>
                                             <h4 style={{ margin: 0, fontSize: '1.125rem' }}>{team.name}</h4>
-                                            {team.ps && <p style={{ fontSize: '0.8rem', color: 'var(--primary)', marginTop: '0.25rem' }}>PS: {team.ps}</p>}
                                             <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>{team.students ? team.students.length : 0} Members</p>
                                         </div>
                                         <ArrowRight size={20} color="var(--primary)" />
@@ -382,12 +381,6 @@ const ReviewerDashboard = () => {
                                 <div className="badge" style={{ background: 'rgba(99, 102, 241, 0.1)', color: 'var(--primary)', padding: '0.5rem 1rem', display: 'inline-block', alignSelf: 'flex-start' }}>
                                     Reviewing: <span style={{ fontWeight: 'bold' }}>{selectedTeam?.name}</span>
                                 </div>
-                                {selectedTeam?.ps && (
-                                    <div className="glass" style={{ padding: '0.75rem 1rem', borderLeft: '3px solid var(--primary)', background: 'rgba(255,255,255,0.02)' }}>
-                                        <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--text-muted)' }}>Problem Statement:</p>
-                                        <p style={{ margin: 0, fontWeight: 600 }}>{selectedTeam.ps}</p>
-                                    </div>
-                                )}
                             </div>
 
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
@@ -437,7 +430,6 @@ const ReviewerDashboard = () => {
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                                 <div>
                                     <h2 style={{ margin: 0 }}>Attendance</h2>
-                                    {selectedTeam?.ps && <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.875rem', color: 'var(--primary)' }}><strong>PS:</strong> {selectedTeam.ps}</p>}
                                 </div>
                                 <button
                                     className="btn btn-outline"
@@ -510,7 +502,19 @@ const ReviewerDashboard = () => {
                         animate={{ opacity: 1, y: 0 }}
                     >
                         <div className="glass" style={{ padding: '2.5rem' }}>
-                            <h2 style={{ marginBottom: '1.5rem' }}>Mark Evaluation</h2>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+                                <h2 style={{ margin: 0 }}>Mark Evaluation</h2>
+                                <div className="badge" style={{ background: 'rgba(99, 102, 241, 0.1)', color: 'var(--primary)' }}>
+                                    Team: {selectedTeam?.name}
+                                </div>
+                            </div>
+
+                            {selectedTeam?.ps && (
+                                <div className="glass" style={{ padding: '1rem', borderLeft: '4px solid var(--primary)', background: 'rgba(255,255,255,0.02)', marginBottom: '2rem' }}>
+                                    <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Selected Problem Statement:</p>
+                                    <p style={{ margin: 0, fontWeight: 600, fontSize: '1.1rem' }}>{selectedTeam.ps}</p>
+                                </div>
+                            )}
                             {selectedSession?.criteria.map((criterion: any) => (
                                 <div key={criterion.id} style={{ marginBottom: '1.5rem' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
