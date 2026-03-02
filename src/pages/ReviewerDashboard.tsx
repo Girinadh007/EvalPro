@@ -263,11 +263,20 @@ const ReviewerDashboard = () => {
 
     return (
         <div style={{ maxWidth: step === 'review' ? '1200px' : '900px', margin: '0 auto', paddingBottom: '5rem' }}>
-            <div style={{ display: 'flex', gap: '1rem', marginBottom: '3rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '1rem' }}>
+            <div className="reviewer-nav" style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '1rem',
+                marginBottom: '2rem',
+                borderBottom: '1px solid rgba(255,255,255,0.05)',
+                paddingBottom: '1rem',
+                alignItems: 'center'
+            }}>
                 <button
                     onClick={() => setStep(reviewerName ? 'team' : 'identity')}
+                    className="nav-tab"
                     style={{
-                        padding: '1rem',
+                        padding: '0.75rem 0',
                         background: 'none',
                         color: 'var(--primary)',
                         borderBottom: step !== 'identity' ? '2px solid var(--primary)' : 'none',
@@ -275,22 +284,46 @@ const ReviewerDashboard = () => {
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '0.5rem'
+                        gap: '0.5rem',
+                        fontSize: '1rem'
                     }}
                 >
-                    <BarChart size={18} /> Evaluation Portal
+                    <BarChart size={18} /> <span className="tab-text">Evaluation Portal</span>
                 </button>
 
                 {reviewerName && (
-                    <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '1rem', padding: '0 1rem' }}>
-                        <div className="badge" style={{ background: 'rgba(255,255,255,0.03)', color: 'var(--text-muted)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                            <User size={14} style={{ marginRight: '0.5rem' }} /> {reviewerName}
+                    <div className="reviewer-identity" style={{
+                        marginLeft: 'auto',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.75rem',
+                        flexWrap: 'wrap',
+                        justifyContent: 'flex-end'
+                    }}>
+                        <div className="badge identity-badge" style={{
+                            background: 'rgba(255,255,255,0.03)',
+                            color: 'var(--text-muted)',
+                            border: '1px solid rgba(255,255,255,0.05)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.4rem',
+                            padding: '0.4rem 0.8rem'
+                        }}>
+                            <User size={14} /> <span>{reviewerName}</span>
                         </div>
                         <button
                             onClick={() => { setStep('identity'); }}
-                            style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontSize: '0.8rem', textDecoration: 'none', fontWeight: 600 }}
+                            style={{
+                                background: 'none',
+                                border: 'none',
+                                color: 'var(--primary)',
+                                cursor: 'pointer',
+                                fontSize: '0.75rem',
+                                fontWeight: 600,
+                                whiteSpace: 'nowrap'
+                            }}
                         >
-                            Change Identity
+                            Change <span className="hide-mobile">Identity</span>
                         </button>
                     </div>
                 )}

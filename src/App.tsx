@@ -69,7 +69,7 @@ function App() {
 
       {/* Premium Header - Dynamic Visibility */}
       <motion.header
-        className="glass"
+        className="glass main-header"
         initial={{ y: 0, opacity: 1 }}
         animate={{
           y: showHeader ? 0 : -100,
@@ -77,63 +77,29 @@ function App() {
         }}
         transition={{ duration: 0.4, ease: "circOut" }}
         style={{
-          margin: '1.5rem',
-          padding: '1.25rem 2.5rem',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 100,
-          boxShadow: '0 20px 40px -10px rgba(0,0,0,0.5)',
           pointerEvents: showHeader ? 'auto' : 'none'
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-          <div style={{
-            background: 'linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)',
-            padding: '0.65rem',
-            borderRadius: '1rem',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 0 20px -5px var(--primary-glow)'
-          }}>
-            <ShieldCheck size={28} color="white" />
+        <div className="header-brand">
+          <div className="brand-icon">
+            <ShieldCheck size={24} color="white" />
           </div>
-          <div>
-            <h1 style={{ fontSize: '1.5rem', margin: 0, letterSpacing: '-0.05em' }}>
-              Eval<span style={{ color: 'var(--primary)' }}>System</span> <span style={{ color: 'var(--secondary)' }}>Pro</span>
-            </h1>
-          </div>
+          <h1 className="brand-text">
+            Eval<span>System</span> <span className="secondary-text">Pro</span>
+          </h1>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
-          <div className="badge" style={{
-            background: 'rgba(99, 102, 241, 0.1)',
-            color: 'var(--primary)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.65rem',
-            padding: '0.5rem 1.25rem',
-            border: '1px solid rgba(99, 102, 241, 0.2)'
-          }}>
-            <Users size={16} />
-            <span style={{ fontWeight: 800 }}>{userRole === 'head' ? 'Administration' : 'Reviewer'}</span>
+        <div className="header-actions">
+          <div className="badge role-badge">
+            <Users size={14} />
+            <span>{userRole === 'head' ? 'Admin' : 'Reviewer'}</span>
           </div>
           <button
-            className="btn btn-outline"
-            style={{
-              padding: '0.65rem 1.25rem',
-              fontSize: '0.9rem',
-              borderRadius: '0.85rem'
-            }}
+            className="btn btn-outline logout-btn"
             onClick={handleLogout}
           >
             <LogOut size={18} />
-            <span>Sign Out</span>
+            <span className="btn-text">Sign Out</span>
           </button>
         </div>
       </motion.header>

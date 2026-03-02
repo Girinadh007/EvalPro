@@ -164,6 +164,7 @@ h4 {
   letter-spacing: -0.04em;
   background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 1rem;
 }
@@ -272,7 +273,154 @@ select:focus {
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2.5rem;
+  padding: 2rem;
+}
+
+/* Header Specific Styles */
+.main-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  margin: 1.5rem;
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 100;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.brand-icon {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  padding: 0.5rem;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.brand-text {
+  font-size: 1.25rem;
+  margin: 0;
+  letter-spacing: -0.05em;
+  background: none;
+  -webkit-text-fill-color: initial;
+  color: white;
+}
+
+.brand-text span {
+  color: var(--primary);
+}
+
+.brand-text .secondary-text {
+  color: var(--secondary);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.role-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.75rem;
+}
+
+.logout-btn {
+  padding: 0.5rem 1rem;
+  gap: 0.5rem;
+}
+
+/* Responsive Utilities */
+@media (max-width: 768px) {
+  .container {
+    padding: 1.5rem 1rem;
+  }
+
+  .main-header {
+    margin: 0.75rem;
+    padding: 0.5rem 1rem;
+  }
+
+  .brand-text {
+    font-size: 1.1rem;
+  }
+
+  .brand-icon {
+    padding: 0.35rem;
+  }
+
+  .role-badge {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.7rem;
+  }
+
+  .role-badge span {
+    display: none;
+  }
+
+  .logout-btn .btn-text {
+    display: none;
+  }
+
+  .logout-btn {
+    padding: 0.5rem;
+  }
+
+  .header-actions {
+    gap: 0.5rem;
+  }
+
+  .glass {
+    border-radius: 1rem;
+  }
+
+  /* Reviewer Dash Mobile */
+  .reviewer-nav {
+    justify-content: center !important;
+    text-align: center;
+  }
+
+  .reviewer-identity {
+    margin-left: 0 !important;
+    justify-content: center !important;
+    width: 100%;
+  }
+
+  .nav-tab {
+    width: 100%;
+    justify-content: center;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.05) !important;
+    padding: 1rem 0 !important;
+  }
+
+  .tab-text {
+    font-size: 0.9rem;
+  }
+
+  .hide-mobile {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .brand-text {
+    display: none;
+  }
+
+  .main-header {
+    margin: 0.5rem;
+  }
 }
 
 /* Progress bar style */
