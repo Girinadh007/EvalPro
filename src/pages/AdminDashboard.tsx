@@ -374,11 +374,17 @@ const AdminDashboard = () => {
             // 4. Format data student-wise
             const xlsxData: any[] = [];
 
-            // We only care about teams that have students
+            // We only care about teams that have been reviewed in this event
             teamsWithStudents.forEach(team => {
+                const teamReviews = reviewsData.filter(r => r.team_id === team.id);
+                if (teamReviews.length === 0) return;
+
                 if (!team.students || team.students.length === 0) return;
 
-                team.students.forEach((student: any) => {
+                // Deduplicate students by name to clean up any past duplicate records in the report
+                const uniqueStudents = Array.from(new Map(team.students.map((s: any) => [s.name, s])).values());
+
+                uniqueStudents.forEach((student: any) => {
                     const row: any = {
                         'Team Name': team.name,
                         'PS': team.ps || 'N/A',

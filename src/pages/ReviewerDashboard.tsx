@@ -152,7 +152,9 @@ const ReviewerDashboard = () => {
         setSelectedTeam(team);
         const initialAttendance: Record<string, boolean> = {};
         if (team.students) {
-            team.students.forEach((s: any) => {
+            // Only initialize for unique students to match the UI and reports
+            const uniqueStudents = Array.from(new Map(team.students.map((s: any) => [s.name, s])).values());
+            uniqueStudents.forEach((s: any) => {
                 initialAttendance[s.student_id] = true;
             });
         }
