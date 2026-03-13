@@ -447,7 +447,7 @@ const ReviewerDashboard = () => {
                                                 <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.5rem' }}>{team.name}</h3>
                                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                                                     {(() => {
-                                                        const uniqueStudents = Array.from(new Map(team.students?.map((s: any) => [s.name, s])).values());
+                                                        const uniqueStudents = Array.from(new Map(team.students?.map((s: any) => [s.name.trim().toLowerCase(), s])).values());
                                                         return uniqueStudents.map((s: any) => (
                                                             <span key={s.id} style={{ fontSize: '0.8rem', padding: '0.25rem 0.6rem', borderRadius: '0.5rem', background: 'rgba(255,255,255,0.05)', color: 'var(--text-muted)' }}>
                                                                 {s.name}
@@ -566,7 +566,7 @@ const ReviewerDashboard = () => {
 
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '3rem' }}>
                                 {(() => {
-                                    const uniqueStudents = Array.from(new Map(selectedTeam?.students?.map((s: any) => [s.name, s])).values());
+                                    const uniqueStudents = Array.from(new Map(selectedTeam?.students?.map((s: any) => [s.name.trim().toLowerCase(), s])).values());
                                     return uniqueStudents.map((student: any) => (
                                         <div key={student.id} className="glass" style={{
                                             padding: '1.25rem 2rem',

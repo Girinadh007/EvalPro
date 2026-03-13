@@ -317,45 +317,45 @@ const AdminDashboard = () => {
         });
         const deduplicatedStudents = Array.from(uniqueStudentsMap.values());
 
-        // 3. Handle "Moves", "ID Upgrades", and Cleanup (Sync)
-        // If a student is in the DB but not in our new file for teams we are processing, OR if they moved teams, we clean them up.
+        // 3. SYNC: For all teams present in the upload, the DB must match the file exactly.
+        // Any student currently in the DB for one of these teams who is NOT in the new file (by ID) will be removed.
+        // This automatically handles moves, removals, and Sl No / ID changes.
         try {
-            // Get all teams being updated in this upload
             const uniqueTeamIds = Array.from(new Set(deduplicatedStudents.map(s => s.team_id)));
             
-            // Get all current students for ONLY these teams
+            // 1. Fetch all current students for the teams being updated
             const { data: currentStudentsForTeams } = await supabase
                 .from('students')
-                .select('id, team_id, student_id, name')
+                .select('id, team_id, student_id')
                 .in('team_id', uniqueTeamIds);
 
             if (currentStudentsForTeams && currentStudentsForTeams.length > 0) {
-                const idsToDelete: string[] = [];
+                // 2. Identify records in DB that are NOT in the incoming deduplicated set (by ID within that team)
+                const idsToDelete = currentStudentsForTeams
+                    .filter(ex => !deduplicatedStudents.some(inc => 
+                        inc.team_id === ex.team_id && inc.student_id === ex.student_id
+                    ))
+                    .map(ex => ex.id);
 
-                // 3a. MOVE DETECTION: If a student from ANY team (not just these) is now in a new team
-                const { data: allExisting } = await supabase.from('students').select('id, team_id, student_id, name');
-                if (allExisting) {
-                    deduplicatedStudents.forEach(incoming => {
-                        const moves = allExisting.filter(ex => {
-                            const isSamePerson = (ex.student_id === incoming.student_id) || 
-                                               (ex.name.trim().toLowerCase() === incoming.name.trim().toLowerCase());
-                            const isDifferentTeam = ex.team_id !== incoming.team_id;
-                            return isSamePerson && isDifferentTeam;
-                        });
-                        moves.forEach(m => idsToDelete.push(m.id));
+                // 3. Also check for "Name collisions" where a student might have a new ID but same name
+                // We want to delete the old record so the new ID record doesn't look like a duplicate
+                const { data: allCurrentWithName } = await supabase
+                    .from('students')
+                    .select('id, team_id, name')
+                    .in('team_id', uniqueTeamIds);
+                
+                if (allCurrentWithName) {
+                    allCurrentWithName.forEach(ex => {
+                        const hasNameMatchButDifferentId = deduplicatedStudents.some(inc => 
+                            inc.team_id === ex.team_id && 
+                            inc.name.trim().toLowerCase() === ex.name.trim().toLowerCase() &&
+                            !currentStudentsForTeams.some(csc => csc.team_id === inc.team_id && csc.student_id === inc.student_id && csc.id === ex.id)
+                        );
+                        if (hasNameMatchButDifferentId) {
+                            idsToDelete.push(ex.id);
+                        }
                     });
                 }
-
-                // 3b. REMOVAL DETECTION (SYNC): If a student was in one of these teams but is GONE in the new file
-                currentStudentsForTeams.forEach(ex => {
-                    const stillExists = deduplicatedStudents.some(incoming => 
-                        (incoming.team_id === ex.team_id) && 
-                        (incoming.student_id === ex.student_id || incoming.name.trim().toLowerCase() === ex.name.trim().toLowerCase())
-                    );
-                    if (!stillExists) {
-                        idsToDelete.push(ex.id);
-                    }
-                });
 
                 if (idsToDelete.length > 0) {
                     const uniqueIdsToDelete = Array.from(new Set(idsToDelete));
@@ -363,7 +363,7 @@ const AdminDashboard = () => {
                 }
             }
         } catch (err) {
-            console.error('Error during move/sync detection:', err);
+            console.error('Error during student sync:', err);
         }
 
         const { error: studError } = await supabase
@@ -446,7 +446,7 @@ const AdminDashboard = () => {
                 if (!team.students || team.students.length === 0) return;
 
                 // Deduplicate students by name to clean up any past duplicate records in the report
-                const uniqueStudents = Array.from(new Map(team.students.map((s: any) => [s.name, s])).values());
+                const uniqueStudents = Array.from(new Map(team.students.map((s: any) => [s.name.trim().toLowerCase(), s])).values());
 
                 uniqueStudents.forEach((student: any) => {
                     const row: any = {
