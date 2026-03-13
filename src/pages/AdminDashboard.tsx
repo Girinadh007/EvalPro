@@ -14,6 +14,7 @@ import {
     Pencil,
     X,
     LayoutGrid,
+    Users,
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -156,7 +157,14 @@ const AdminDashboard = () => {
 
                 if (sessError) throw sessError;
 
-                toast.success('Event updated successfully!');
+                // Update students if new data provided
+                if (studentsData.length > 0) {
+                    await processAndSaveStudents(studentsData);
+                    toast.success('Event and student data updated successfully!');
+                } else {
+                    toast.success('Event updated successfully!');
+                }
+
                 cancelEdit();
                 fetchEvents();
                 setActiveTab('manage');
@@ -231,11 +239,11 @@ const AdminDashboard = () => {
         }
     };
 
-    const handleCreateEvent = async () => {
+    const processAndSaveStudents = async (data: any[]) => {
         // 0. Pre-process Student Data (Fill Down logic for Team Names and PS)
         let lastTeam = 'Unassigned';
         let lastPS = '';
-        const processedData = studentsData.map(s => {
+        const processedData = data.map(s => {
             // Find potential team/PS keys
             const rawTeam = s.team_id || s.team || s['team name'] || s['Team Name'] || s['TEAM'] || '';
             const rawPS = s.ps || s['PS'] || s['problem statement'] || s['Problem Statement'] || '';
@@ -256,26 +264,7 @@ const AdminDashboard = () => {
             };
         }).filter(s => s.final_name); // Ignore rows with no names
 
-        // 1. Create Event
-        const { data: eventData, error: eventError } = await supabase
-            .from('evaluation_events')
-            .insert([{ name: eventName, num_sessions: numSessions }])
-            .select()
-            .single();
-
-        if (eventError) throw eventError;
-
-        // 2. Create Sessions
-        const sessionsToInsert = sessions.map(s => ({
-            event_id: eventData.id,
-            session_number: s.number,
-            criteria: s.criteria
-        }));
-
-        const { error: sessError } = await supabase.from('review_sessions').insert(sessionsToInsert);
-        if (sessError) throw sessError;
-
-        // 3. Process Teams and Students
+        // 1. Process Teams and Students
         // Get unique teams from processed data
         const teamMapWithPS = new Map();
         processedData.forEach(s => {
@@ -305,7 +294,7 @@ const AdminDashboard = () => {
             details: s
         }));
 
-        // 4. Deduplicate studentsToInsert to prevent internal collision during bulk upsert
+        // 2. Deduplicate studentsToInsert to prevent internal collision during bulk upsert
         const uniqueStudentsMap = new Map();
         studentsToInsert.forEach(s => {
             const key = `${s.team_id}_${s.student_id}`;
@@ -322,7 +311,33 @@ const AdminDashboard = () => {
             toast.error('Some students could not be saved: ' + studError.message);
         }
 
-        toast.success(`Event created with ${processedData.length} students across ${teamMapWithPS.size} teams!`);
+        return processedData.length;
+    };
+
+    const handleCreateEvent = async () => {
+        // 1. Create Event
+        const { data: eventData, error: eventError } = await supabase
+            .from('evaluation_events')
+            .insert([{ name: eventName, num_sessions: numSessions }])
+            .select()
+            .single();
+
+        if (eventError) throw eventError;
+
+        // 2. Create Sessions
+        const sessionsToInsert = sessions.map(s => ({
+            event_id: eventData.id,
+            session_number: s.number,
+            criteria: s.criteria
+        }));
+
+        const { error: sessError } = await supabase.from('review_sessions').insert(sessionsToInsert);
+        if (sessError) throw sessError;
+
+        // 3. Process Students
+        const count = await processAndSaveStudents(studentsData);
+
+        toast.success(`Event created with ${count} students!`);
         cancelEdit();
         fetchEvents();
         setActiveTab('manage');
@@ -407,6 +422,43 @@ const AdminDashboard = () => {
         } catch (err: any) {
             console.error(err);
             toast.error('Failed to export marks: ' + err.message);
+        }
+    };
+
+    const downloadRegisteredStudents = async (eventName: string) => {
+        try {
+            // Fetch all teams and their students
+            const { data: teamsWithStudents } = await supabase
+                .from('teams')
+                .select('name, ps, students(student_id, name)')
+                .order('name');
+
+            if (!teamsWithStudents || teamsWithStudents.length === 0) {
+                return toast.error('No student data available to export');
+            }
+
+            const xlsxData: any[] = [];
+            teamsWithStudents.forEach(team => {
+                if (team.students && team.students.length > 0) {
+                    team.students.forEach((student: any) => {
+                        xlsxData.push({
+                            'Team Name': team.name,
+                            'PS': team.ps || '',
+                            'Student Name': student.name,
+                            'Student ID': student.student_id
+                        });
+                    });
+                }
+            });
+
+            const ws = XLSX.utils.json_to_sheet(xlsxData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Students List");
+            XLSX.writeFile(wb, `${eventName}_students_list.xlsx`);
+            toast.success('Student list exported');
+        } catch (err: any) {
+            console.error(err);
+            toast.error('Failed to export students: ' + err.message);
         }
     };
 
@@ -556,19 +608,22 @@ const AdminDashboard = () => {
                             <h2 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                                 <FileSpreadsheet className="text-primary" /> Student Data
                             </h2>
-                            {editingEvent ? (
-                                <div className="glass" style={{ padding: '1.5rem', opacity: 0.7 }}>
-                                    <p style={{ margin: 0, color: 'var(--text-muted)' }}>Student data modification is disabled during event edit.</p>
+                            {studentsData.length === 0 ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                    {editingEvent && (
+                                        <div className="badge" style={{ background: 'rgba(59, 130, 246, 0.1)', color: 'var(--primary)', alignSelf: 'flex-start', padding: '0.5rem 1rem' }}>
+                                            Optional: Upload CSV to update student/team details
+                                        </div>
+                                    )}
+                                    <ExcelUpload onDataLoaded={setStudentsData} />
                                 </div>
-                            ) : studentsData.length === 0 ? (
-                                <ExcelUpload onDataLoaded={setStudentsData} />
                             ) : (
                                 <div className="glass" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                                         <CheckCircle2 color="var(--accent)" />
                                         <div>
-                                            <h4 style={{ margin: 0 }}>Data Loaded</h4>
-                                            <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>{studentsData.length} students across multiple teams</p>
+                                            <h4 style={{ margin: 0 }}>{editingEvent ? 'New Data Ready to Update' : 'Data Loaded'}</h4>
+                                            <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>{studentsData.length} students ready to be processed</p>
                                         </div>
                                     </div>
                                     <button className="btn btn-outline" onClick={() => setStudentsData([])}>Change File</button>
@@ -720,7 +775,16 @@ const AdminDashboard = () => {
                                             </button>
                                             <button
                                                 className="btn btn-outline"
+                                                style={{ padding: '0.65rem 1rem', color: 'var(--accent)', borderColor: 'rgba(34, 211, 238, 0.4)' }}
+                                                title="Download Student List"
+                                                onClick={() => downloadRegisteredStudents(event.name)}
+                                            >
+                                                <Users size={16} />
+                                            </button>
+                                            <button
+                                                className="btn btn-outline"
                                                 style={{ padding: '0.65rem 1rem', color: 'var(--info)', borderColor: 'rgba(14, 165, 233, 0.4)' }}
+                                                title="Download Marks Report"
                                                 onClick={() => downloadMarks(event.id, event.name)}
                                             >
                                                 <Download size={16} />
