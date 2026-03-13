@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/components/excelupload.tsx","./src/lib/supabase.ts","./src/pages/admindashboard.tsx","./src/pages/login.tsx","./src/pages/reviewerdashboard.tsx"],"version":"5.9.3"}
