@@ -243,16 +243,32 @@ const AdminDashboard = () => {
         // 0. Pre-process Student Data (Fill Down logic for Team Names and PS)
         let lastTeam = 'Unassigned';
         let lastPS = '';
-        const processedData = data.map(s => {
-            // Find potential team/PS keys
-            const rawTeam = s.team_id || s.team || s['team name'] || s['Team Name'] || s['TEAM'] || '';
-            const rawPS = s.ps || s['PS'] || s['problem statement'] || s['Problem Statement'] || '';
-            const studentName = s.name || s['student name'] || s['Student Name'] || s['Name'] || '';
-            const studentId = (s.student_id || s.id || s['Sl No.'] || s['sl no'] || s['Student ID'] || s['student id'] || s['Student Id'] || s['STU ID'] || Math.random().toString()).toString().trim();
+        // Helper to find a value by multiple possible keys (case-insensitive, trimmed)
+        const getVal = (obj: any, possibleKeys: string[]) => {
+            const keys = Object.keys(obj);
+            for (const pk of possibleKeys) {
+                const target = pk.toLowerCase().trim();
+                const foundKey = keys.find(k => k.toLowerCase().trim() === target);
+                if (foundKey && obj[foundKey] !== undefined && obj[foundKey] !== null) return obj[foundKey];
+            }
+            // Check for unlabeled numeric values (shifted columns)
+            const emptyKey = keys.find(k => k.startsWith('__EMPTY') && typeof obj[k] === 'number');
+            if (emptyKey) return obj[emptyKey];
+            return '';
+        };
 
-            if (rawTeam && rawTeam.toString().trim() !== '') {
-                lastTeam = rawTeam.toString().trim();
-                lastPS = rawPS.toString().trim();
+        const processedData = data.map(s => {
+            const rawTeam = getVal(s, ['team_id', 'team', 'team name', 'TEAM']).toString().trim();
+            const rawPS = getVal(s, ['ps', 'problem statement', 'Problem Statement']).toString().trim();
+            const studentName = getVal(s, ['name', 'student name', 'Student Name']).toString().trim();
+            
+            // Try specific ID keys first, then fallback to Sl No or generated
+            let studentId = getVal(s, ['student_id', 'Student ID', 'student id', 'id', 'Sl No.', 'sl no', 'STU ID']).toString().trim();
+            if (!studentId) studentId = Math.random().toString();
+
+            if (rawTeam) {
+                lastTeam = rawTeam;
+                lastPS = rawPS;
             }
 
             return {
@@ -265,7 +281,6 @@ const AdminDashboard = () => {
         }).filter(s => s.final_name); // Ignore rows with no names
 
         // 1. Process Teams and Students
-        // Get unique teams from processed data
         const teamMapWithPS = new Map();
         processedData.forEach(s => {
             if (!teamMapWithPS.has(s.final_team)) {
@@ -280,13 +295,12 @@ const AdminDashboard = () => {
 
         if (teamsError) throw teamsError;
 
-        // Map team names to IDs
         const teamMap = teamsData.reduce((acc, team) => {
             acc[team.name] = team.id;
             return acc;
         }, {} as Record<string, string>);
 
-        // Insert Students
+        // Prepare Students
         const studentsToInsert = processedData.map((s: any) => ({
             team_id: teamMap[s.final_team],
             student_id: s.final_id,
@@ -294,12 +308,11 @@ const AdminDashboard = () => {
             details: s
         }));
 
-        // 2. Deduplicate studentsToInsert to prevent internal collision
+        // 2. Deduplicate studentsToInsert internally (scoped to Team+ID)
         const uniqueStudentsMap = new Map();
         studentsToInsert.forEach(s => {
-            // Real IDs from Excel should be globally unique, but random IDs are per-entry
-            const isRandomId = s.student_id.includes('.') && s.student_id.startsWith('0.');
-            const key = isRandomId ? `${s.team_id}_${s.student_id}` : s.student_id;
+            // Key MUST include team_id to allow same sl_no in different teams
+            const key = `${s.team_id}_${s.student_id}`;
             uniqueStudentsMap.set(key, s);
         });
         const deduplicatedStudents = Array.from(uniqueStudentsMap.values());
