@@ -248,7 +248,7 @@ const AdminDashboard = () => {
             const rawTeam = s.team_id || s.team || s['team name'] || s['Team Name'] || s['TEAM'] || '';
             const rawPS = s.ps || s['PS'] || s['problem statement'] || s['Problem Statement'] || '';
             const studentName = s.name || s['student name'] || s['Student Name'] || s['Name'] || '';
-            const studentId = (s.student_id || s.id || s['Sl No.'] || s['sl no'] || Math.random().toString()).toString();
+            const studentId = (s.student_id || s.id || s['Sl No.'] || s['sl no'] || s['Student ID'] || s['student id'] || s['Student Id'] || s['STU ID'] || Math.random().toString()).toString().trim();
 
             if (rawTeam && rawTeam.toString().trim() !== '') {
                 lastTeam = rawTeam.toString().trim();
