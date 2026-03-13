@@ -294,13 +294,42 @@ const AdminDashboard = () => {
             details: s
         }));
 
-        // 2. Deduplicate studentsToInsert to prevent internal collision during bulk upsert
+        // 2. Deduplicate studentsToInsert to prevent internal collision
         const uniqueStudentsMap = new Map();
         studentsToInsert.forEach(s => {
-            const key = `${s.team_id}_${s.student_id}`;
+            // Real IDs from Excel should be globally unique, but random IDs are per-entry
+            const isRandomId = s.student_id.includes('.') && s.student_id.startsWith('0.');
+            const key = isRandomId ? `${s.team_id}_${s.student_id}` : s.student_id;
             uniqueStudentsMap.set(key, s);
         });
         const deduplicatedStudents = Array.from(uniqueStudentsMap.values());
+
+        // 3. Handle "Moves" and "ID Upgrades"
+        // If a student exists with the same ID or Name but in a different team, 
+        // we remove the old record so they only appear in the new team.
+        try {
+            const { data: allExisting } = await supabase.from('students').select('id, team_id, student_id, name');
+            if (allExisting && allExisting.length > 0) {
+                const idsToDelete: string[] = [];
+                deduplicatedStudents.forEach(incoming => {
+                    const existingMatches = allExisting.filter(ex => {
+                        const isSamePerson = (ex.student_id === incoming.student_id) || 
+                                           (ex.name.trim().toLowerCase() === incoming.name.trim().toLowerCase());
+                        const isDifferentTeam = ex.team_id !== incoming.team_id;
+                        return isSamePerson && isDifferentTeam;
+                    });
+                    existingMatches.forEach(m => idsToDelete.push(m.id));
+                });
+
+                if (idsToDelete.length > 0) {
+                    const uniqueIdsToDelete = Array.from(new Set(idsToDelete));
+                    await supabase.from('students').delete().in('id', uniqueIdsToDelete);
+                }
+            }
+        } catch (err) {
+            console.error('Error during move detection:', err);
+            // Non-critical: continue with upsert
+        }
 
         const { error: studError } = await supabase
             .from('students')
